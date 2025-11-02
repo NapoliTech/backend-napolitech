@@ -12,46 +12,34 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # ==============================
       # Spring Boot
-      # ==============================
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       SPRING_APPLICATION_NAME: ${SPRING_APPLICATION_NAME:-back-end-napolitech}
 
-      # ==============================
-      # Banco de dados (prod ou dev)
-      # ==============================
+      # Banco de dados
       DATASOURCE_URL: ${DATASOURCE_URL:-jdbc:mysql://db:3306/pizzaria_db?createDatabaseIfNotExist=true}
       DATASOURCE_USERNAME: ${DATASOURCE_USERNAME:-napolitech}
       DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD:-napolitech_dev}
       DATASOURCE_DRIVER: ${DATASOURCE_DRIVER:-com.mysql.cj.jdbc.Driver}
 
-      # H2 (dev) defaults
+      # H2 defaults
       H2_CONSOLE_ENABLED: ${H2_CONSOLE_ENABLED:-true}
       SQL_PLATFORM: ${SQL_PLATFORM:-h2}
       JPA_DATABASE_PLATFORM: ${JPA_DATABASE_PLATFORM:-org.hibernate.dialect.H2Dialect}
 
-      # ==============================
       # JPA / Hibernate
-      # ==============================
       JPA_DDL_AUTO: ${JPA_DDL_AUTO:-update}
       JPA_SHOW_SQL: ${JPA_SHOW_SQL:-true}
       HIBERNATE_DIALECT: ${HIBERNATE_DIALECT:-org.hibernate.dialect.MySQLDialect}
 
-      # ==============================
       # Servidor
-      # ==============================
       SERVER_PORT: ${SERVER_PORT:-8080}
 
-      # ==============================
       # Logging
-      # ==============================
       LOGGING_SQL: ${LOGGING_SQL:-DEBUG}
       LOGGING_BINDER: ${LOGGING_BINDER:-TRACE}
 
-      # ==============================
       # OAuth2 / Email (opcional)
-      # ==============================
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
@@ -61,8 +49,20 @@ services:
       MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-true}
       MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS:-true}
 
+      # ==============================
+      # RabbitMQ Properties (novas)
+      broker.exchange.name: ${BROKER_EXCHANGE_NAME:-napolitech.exchange}
+      broker.queue.name: ${BROKER_QUEUE_NAME:-pedidos.queue}
+      broker.routing.key: ${BROKER_ROUTING_KEY:-pedidos.routing.key}
+      spring.rabbitmq.host: rabbitmq
+      spring.rabbitmq.port: 5672
+      spring.rabbitmq.username: ${RABBITMQ_DEFAULT_USER:-admin}
+      spring.rabbitmq.password: ${RABBITMQ_DEFAULT_PASS:-napolitech}
+
     depends_on:
       db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - network-napolitech

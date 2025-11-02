@@ -11,6 +11,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
@@ -61,14 +65,17 @@ class PedidoListagemTest {
     void listarPedidos_sucesso() {
         Pedido pedido1 = new Pedido();
         Pedido pedido2 = new Pedido();
-        List<Pedido> pedidos = Arrays.asList(pedido1, pedido2);
-        when(pedidoRepository.findAll()).thenReturn(pedidos);
 
-        List<Pedido> result = pedidoListagem.listarPedidos();
+        List<Pedido> listaPedidos = Arrays.asList(pedido1, pedido2);
+        Page<Pedido> paginaPedidos = new PageImpl<>(listaPedidos);
 
-        assertEquals(2, result.size());
-        assertTrue(result.contains(pedido1));
-        assertTrue(result.contains(pedido2));
+        when(pedidoRepository.findAll(any(Pageable.class))).thenReturn(paginaPedidos);
+
+        Page<Pedido> result = pedidoListagem.listarPedidos(PageRequest.of(0, 10));
+
+        assertEquals(2, result.getTotalElements());
+        assertTrue(result.getContent().contains(pedido1));
+        assertTrue(result.getContent().contains(pedido2));
     }
 
     @Test

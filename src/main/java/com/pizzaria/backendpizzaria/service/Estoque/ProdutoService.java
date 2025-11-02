@@ -4,7 +4,10 @@ import com.pizzaria.backendpizzaria.domain.DTO.Pedido.ProdutoDTO;
 import com.pizzaria.backendpizzaria.domain.Enum.CategoriaProduto;
 import com.pizzaria.backendpizzaria.domain.Produto;
 import com.pizzaria.backendpizzaria.repository.ProdutoRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,8 +45,8 @@ public class ProdutoService {
         return produtoRepository.findById(id);
     }
 
-    public List<Produto> listarProdutos() {
-        return produtoRepository.findAll();
+    public Page<Produto> listarProdutos(Pageable pageable) {
+        return produtoRepository.findAll(pageable);
     }
 
     @Transactional

@@ -7,6 +7,10 @@ import com.pizzaria.backendpizzaria.repository.ProdutoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
@@ -90,13 +94,16 @@ class ProdutoServiceTest {
 
     @Test
     void listarProdutos_sucesso() {
-        List<Produto> produtos = Arrays.asList(produto);
-        when(produtoRepository.findAll()).thenReturn(produtos);
+        Produto produto = new Produto();
+        List<Produto> listaProdutos = Arrays.asList(produto);
+        Page<Produto> paginaProdutos = new PageImpl<>(listaProdutos);
 
-        List<Produto> result = produtoService.listarProdutos();
+        when(produtoRepository.findAll(any(Pageable.class))).thenReturn(paginaProdutos);
 
-        assertEquals(1, result.size());
-        assertTrue(result.contains(produto));
+        Page<Produto> result = produtoService.listarProdutos(PageRequest.of(0, 10));
+
+        assertEquals(1, result.getTotalElements());
+        assertTrue(result.getContent().contains(produto));
     }
 
     @Test

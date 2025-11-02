@@ -7,7 +7,10 @@ import com.pizzaria.backendpizzaria.infra.exception.ValidationException;
 import com.pizzaria.backendpizzaria.repository.PedidoRepository;
 import com.pizzaria.backendpizzaria.repository.ProdutoRepository;
 import com.pizzaria.backendpizzaria.repository.UsuarioRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -32,8 +35,8 @@ public class PedidoListagem {
         return pedidoRepository.findById(Math.toIntExact(id));
     }
 
-    public List<Pedido> listarPedidos() {
-        return pedidoRepository.findAll();
+    public Page<Pedido> listarPedidos(Pageable pageable) {
+        return pedidoRepository.findAll(pageable);
     }
 
     public List<Produto> buscarProdutos(List<Integer> produtosIds) {

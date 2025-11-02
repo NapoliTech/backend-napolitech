@@ -11,6 +11,7 @@ import com.pizzaria.backendpizzaria.repository.EnderecoRepository;
 import com.pizzaria.backendpizzaria.repository.ProdutoRepository;
 import com.pizzaria.backendpizzaria.repository.PedidoRepository;
 import com.pizzaria.backendpizzaria.repository.UsuarioRepository;
+import com.pizzaria.backendpizzaria.service.RabbitMQ.PedidoProducerService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,12 +35,15 @@ public class PedidoService {
 
     private final PedidoListagem pedidoListagem;
 
-    public PedidoService(PedidoRepository pedidoRepository, ProdutoRepository produtoRepository, UsuarioRepository clienteRepository, PedidoValidacao pedidoValidacao, PedidoListagem pedidoListagem) {
+    private final PedidoProducerService pedidoProducerService;
+
+    public PedidoService(PedidoRepository pedidoRepository, ProdutoRepository produtoRepository, UsuarioRepository clienteRepository, PedidoValidacao pedidoValidacao, PedidoListagem pedidoListagem, PedidoProducerService pedidoProducerService) {
         this.pedidoRepository = pedidoRepository;
         this.produtoRepository = produtoRepository;
         this.clienteRepository = clienteRepository;
         this.pedidoValidacao = pedidoValidacao;
         this.pedidoListagem = pedidoListagem;
+        this.pedidoProducerService = pedidoProducerService;
     }
 
     @Transactional
@@ -56,6 +60,7 @@ public class PedidoService {
         atualizarPedidoComItens(pedido, itens);
 
         pedidoRepository.save(pedido);
+        pedidoProducerService.enviarPedido(pedido);
 
         return pedido;
     }

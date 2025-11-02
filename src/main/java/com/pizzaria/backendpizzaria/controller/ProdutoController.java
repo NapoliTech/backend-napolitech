@@ -1,14 +1,20 @@
 package com.pizzaria.backendpizzaria.controller;
 
 import com.pizzaria.backendpizzaria.domain.DTO.Pedido.ProdutoDTO;
+import com.pizzaria.backendpizzaria.domain.Pedido;
 import com.pizzaria.backendpizzaria.domain.Produto;
 import com.pizzaria.backendpizzaria.service.Estoque.ProdutoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -62,8 +68,10 @@ public class ProdutoController {
 
     @Operation(summary = "Listar todos os produtos", description = "Retorna uma lista de todos os produtos cadastrados.")
     @GetMapping
-    public ResponseEntity<List<Produto>> listarProdutos() {
-        List<Produto> produtos = produtoService.listarProdutos();
+    public ResponseEntity<Page<Produto>> listarPedidos(
+            @Parameter(description = "Configuração de paginação e ordenação")
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Produto> produtos = produtoService.listarProdutos(pageable);
         return ResponseEntity.ok(produtos);
     }
 
