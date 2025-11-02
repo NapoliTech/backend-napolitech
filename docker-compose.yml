@@ -1,4 +1,3 @@
-version: '3.8'
 
 networks:
   network-napolitech:
@@ -86,3 +85,12 @@ services:
       retries: 10
     networks:
       - network-napolitech
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-napolitech}
+    ports:
+      - 5672:5672
+      - 15672:15672
