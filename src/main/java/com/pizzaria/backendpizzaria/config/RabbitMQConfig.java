@@ -1,53 +1,42 @@
 package com.pizzaria.backendpizzaria.config;
 
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
 
-    private final ConnectionFactory connectionFactory;
+    public static final String FILA_PEDIDOS = "pedidos.queue";
+    public static final String EXCHANGE_PEDIDOS = "pedidos.exchange";
+    public static final String ROUTING_KEY_PEDIDO_CRIADO = "pedidos.v1.pedido-criado";
 
-    public RabbitMQConfig(ConnectionFactory connectionFactory) {
-        this.connectionFactory = connectionFactory;
-    }
-
-    @Value("${BROKER_EXCHANGE_NAME}")
-    private String exchangeName;
-
-    @Value("${BROKER_QUEUE_NAME}")
-    private String queueName;
-
+    // Cria fila durável
     @Bean
-    public FanoutExchange exchange() {
-        return new FanoutExchange(exchangeName);
+    public Queue pedidosQueue() {
+        return QueueBuilder.durable(FILA_PEDIDOS).build();
     }
 
+    // Cria exchange do tipo direct
     @Bean
-    public Queue queue() {
-        return new Queue(queueName, true);
+    public DirectExchange pedidosExchange() {
+        return new DirectExchange(EXCHANGE_PEDIDOS);
     }
 
+    // Faz o binding da fila com a exchange usando a routing key
     @Bean
-    public Binding binding(Queue queue, FanoutExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange);
+    public Binding bindingPedidos() {
+        return BindingBuilder.bind(pedidosQueue())
+                .to(pedidosExchange())
+                .with(ROUTING_KEY_PEDIDO_CRIADO);
     }
 
-    @Bean
-    public RabbitTemplate rabbitTemplate() {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setExchange(exchangeName);
-        rabbitTemplate.setMessageConverter(new Jackson2JsonMessageConverter());
-        return rabbitTemplate;
-    }
-
+    // Métodos auxiliares para acesso no ProducerService
     public String getExchangeName() {
-        return exchangeName;
+        return EXCHANGE_PEDIDOS;
     }
 
+    public String getRoutingKeyPedidoCriado() {
+        return ROUTING_KEY_PEDIDO_CRIADO;
+    }
 }

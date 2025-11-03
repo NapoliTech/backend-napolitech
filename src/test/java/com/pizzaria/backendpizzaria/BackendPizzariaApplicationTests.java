@@ -15,22 +15,22 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 @ActiveProfiles("teste")
-//@Import(BackendPizzariaApplicationTests.RabbitMQTestConfig.class)
+@Import(BackendPizzariaApplicationTests.RabbitMQTestConfig.class)
 class BackendPizzariaApplicationTests {
 
-//    @TestConfiguration
-//    static class RabbitMQTestConfig {
-//
-//        @Bean
-//        public RabbitTemplate classTestrabbitTemplate() {
-//            return Mockito.mock(RabbitTemplate.class); // Mocka envio de mensagens
-//        }
-//
-//        @Bean
-//        public SimpleMessageListenerContainer simpleMessageListenerContainer() {
-//            return Mockito.mock(SimpleMessageListenerContainer.class); // Mocka listeners
-//        }
-//    }
+    @TestConfiguration
+    static class RabbitMQTestConfig {
+
+        @Bean
+        public RabbitTemplate classTestrabbitTemplate() {
+            return Mockito.mock(RabbitTemplate.class); // Mocka envio de mensagens
+        }
+
+        @Bean
+        public SimpleMessageListenerContainer simpleMessageListenerContainer() {
+            return Mockito.mock(SimpleMessageListenerContainer.class); // Mocka listeners
+        }
+    }
 
     @Test
     void contextLoads() {

@@ -1,4 +1,3 @@
-
 networks:
   network-napolitech:
     driver: bridge
@@ -12,52 +11,34 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # Spring Boot
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
-      SPRING_APPLICATION_NAME: ${SPRING_APPLICATION_NAME:-back-end-napolitech}
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_APPLICATION_NAME: back-end-napolitech
 
-      # Banco de dados
-      DATASOURCE_URL: ${DATASOURCE_URL:-jdbc:mysql://db:3306/pizzaria_db?createDatabaseIfNotExist=true}
-      DATASOURCE_USERNAME: ${DATASOURCE_USERNAME:-napolitech}
-      DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD:-napolitech_dev}
-      DATASOURCE_DRIVER: ${DATASOURCE_DRIVER:-com.mysql.cj.jdbc.Driver}
+      DATASOURCE_URL: jdbc:mysql://db:3306/pizzaria_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      DATASOURCE_USERNAME: napolitech
+      DATASOURCE_PASSWORD: napolitech_dev
+      DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
 
-      # H2 defaults
-      H2_CONSOLE_ENABLED: ${H2_CONSOLE_ENABLED:-true}
-      SQL_PLATFORM: ${SQL_PLATFORM:-h2}
-      JPA_DATABASE_PLATFORM: ${JPA_DATABASE_PLATFORM:-org.hibernate.dialect.H2Dialect}
+      SERVER_PORT: 8080
 
-      # JPA / Hibernate
-      JPA_DDL_AUTO: ${JPA_DDL_AUTO:-update}
-      JPA_SHOW_SQL: ${JPA_SHOW_SQL:-true}
-      HIBERNATE_DIALECT: ${HIBERNATE_DIALECT:-org.hibernate.dialect.MySQLDialect}
+      LOGGING_SQL: DEBUG
+      LOGGING_BINDER: TRACE
 
-      # Servidor
-      SERVER_PORT: ${SERVER_PORT:-8080}
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: 587
+      MAIL_USERNAME: mailsendernoreplyv8@gmail.com
+      MAIL_PASSWORD: gycihyclbdscmhor
+      MAIL_SMTP_AUTH: true
+      MAIL_SMTP_STARTTLS: true
 
-      # Logging
-      LOGGING_SQL: ${LOGGING_SQL:-DEBUG}
-      LOGGING_BINDER: ${LOGGING_BINDER:-TRACE}
-
-      # OAuth2 / Email (opcional)
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
-      MAIL_PORT: ${MAIL_PORT:-587}
-      MAIL_USERNAME: ${MAIL_USERNAME:-}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
-      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-true}
-      MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS:-true}
-
-      # ==============================
-      # RabbitMQ Properties (novas)
-      broker.exchange.name: ${BROKER_EXCHANGE_NAME:-napolitech.exchange}
-      broker.queue.name: ${BROKER_QUEUE_NAME:-pedidos.queue}
-      broker.routing.key: ${BROKER_ROUTING_KEY:-pedidos.routing.key}
-      spring.rabbitmq.host: rabbitmq
-      spring.rabbitmq.port: 5672
-      spring.rabbitmq.username: ${RABBITMQ_DEFAULT_USER:-admin}
-      spring.rabbitmq.password: ${RABBITMQ_DEFAULT_PASS:-napolitech}
+      # RabbitMQ
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: napolitech
+      BROKER_EXCHANGE_NAME: napolitech-exchange
+      BROKER_QUEUE_NAME: pedidos-queue
+      BROKER_ROUTING_KEY: pedidos-routing-key
 
     depends_on:
       db:
@@ -74,10 +55,10 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-pizzaria_db}
-      MYSQL_USER: ${MYSQL_USER:-napolitech}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-napolitech_dev}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: pizzaria_db
+      MYSQL_USER: napolitech
+      MYSQL_PASSWORD: napolitech_dev
+      MYSQL_ROOT_PASSWORD: root
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
@@ -88,9 +69,17 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.13-management
+    container_name: backend-napolitech-rabbitmq-1
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-napolitech}
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: napolitech
     ports:
       - 5672:5672
       - 15672:15672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    networks:
+      - network-napolitech

@@ -14,7 +14,9 @@ public class PedidoProducerService {
     private final RabbitMQConfig rabbitMQConfig;
     private final ObjectMapper objectMapper;
 
-    public PedidoProducerService(RabbitTemplate rabbitTemplate, ObjectMapper objectMapper, RabbitMQConfig rabbitMQConfig) {
+    public PedidoProducerService(RabbitTemplate rabbitTemplate,
+                                 ObjectMapper objectMapper,
+                                 RabbitMQConfig rabbitMQConfig) {
         this.rabbitTemplate = rabbitTemplate;
         this.objectMapper = objectMapper;
         this.rabbitMQConfig = rabbitMQConfig;
@@ -23,7 +25,11 @@ public class PedidoProducerService {
     public void enviarPedido(Pedido pedido) {
         try {
             String json = objectMapper.writeValueAsString(pedido);
-            rabbitTemplate.convertAndSend(rabbitMQConfig.getExchangeName(), "pedidos.v1.pedido-criado", json);
+            rabbitTemplate.convertAndSend(
+                    rabbitMQConfig.getExchangeName(),
+                    rabbitMQConfig.getRoutingKeyPedidoCriado(),
+                    json
+            );
             System.out.println("Pedido enviado -> " + json);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Erro ao converter pedido em JSON", e);
