@@ -4,9 +4,7 @@ networks:
 
 services:
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: backend-napolitech
     ports:
       - "8080:8080"
@@ -21,9 +19,6 @@ services:
 
       SERVER_PORT: 8080
 
-      LOGGING_SQL: DEBUG
-      LOGGING_BINDER: TRACE
-
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
       MAIL_USERNAME: mailsendernoreplyv8@gmail.com
@@ -31,7 +26,6 @@ services:
       MAIL_SMTP_AUTH: true
       MAIL_SMTP_STARTTLS: true
 
-      # RabbitMQ
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_DEFAULT_USER: admin
@@ -50,7 +44,7 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: db
+    container_name: mysql-napolitech
     restart: always
     ports:
       - "3306:3306"
@@ -59,27 +53,38 @@ services:
       MYSQL_USER: napolitech
       MYSQL_PASSWORD: napolitech_dev
       MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 5s
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD"]
+      interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 30s
     networks:
       - network-napolitech
 
   rabbitmq:
     image: rabbitmq:3.13-management
-    container_name: backend-napolitech-rabbitmq-1
+    container_name: rabbitmq-napolitech
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: napolitech
-    ports:
-      - 5672:5672
-      - 15672:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
-      interval: 5s
+      test: ["CMD-SHELL", "rabbitmqctl node_health_check"]
+      interval: 10s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 20s
     networks:
       - network-napolitech
+
+volumes:
+  mysql_data:
+  rabbitmq_data:

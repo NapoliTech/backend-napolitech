@@ -1,4 +1,4 @@
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk
 WORKDIR /app
 COPY target/backend-pizzaria-1.0.0.jar backend-pizzaria-1.0.0.jar
 EXPOSE 8080
