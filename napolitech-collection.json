@@ -1,967 +1,180 @@
 {
-	"info": {
-		"_postman_id": "24b69987-97b4-4771-983a-930d2046c5cd",
-		"name": "Napolitech - Collection",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "39284450",
-		"_collection_link": "https://napolitech.postman.co/workspace/NapoliTech-Workspace~5cf9f47a-564f-49d5-8b40-202ac1f1ee7e/collection/39284450-24b69987-97b4-4771-983a-930d2046c5cd?action=share&source=collection_link&creator=39284450"
-	},
-	"item": [
-		{
-			"name": "Usuário",
-			"item": [
-				{
-					"name": "Cadastro Usuario",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "",
-								"value": "",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"nome\": \"Marcos Paulo\",\r\n  \"email\": \"marcos@gmail.com\",\r\n  \"dataNasc\": \"10/01/1989\",\r\n  \"cpf\": \"123.123.123-11\",\r\n  \"senha\": \"P@ssw0rd\",\r\n  \"confirmarSenha\": \"P@ssw0rd\",\r\n  \"telefone\": \"(11) 99999-9999\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/cadastro",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"cadastro"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Login Usuário",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "0c2e56f5-03c3-460b-adcc-0fba57d2c71e",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"pedroboxlive6414@gmail.com\",\r\n  \"senha\": \"Pedro123!\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/login",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Atualizar Usuário",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NAZ21haWwuY29tIiwiaWQiOjEsImVtYWlsIjoibWFyY29zQGdtYWlsLmNvbSIsIm5vbWUiOiJNYXJjb3MgUGF1bG8iLCJ0aXBvVXN1YXJpbyI6IlVTVUFSSU9fQ09NVU0iLCJjcGYiOiIxMjMuMTIzLjEyMy0xMSIsImRhdGFOYXNjIjoiMTAvMDEvMTk4OSIsImlhdCI6MTc0Njk5NDUyNywiZXhwIjoxNzQ3MDgwOTI3fQ.IYVtLz2kFOQLDcYdRSNJ1hey4MJeYnJWUsEISshu22c",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"nome\": \"Marcos Paulo\",\r\n  \"email\": \"marcos@gmail.com\",\r\n  \"senha\": \"P@ssw0rd\",\r\n  \"cpf\": \"123.123.123-11\",\r\n  \"telefone\": \"(11) 99999-8888\",\r\n  \"dataNasc\": \"10/01/1989\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Exibir Usuário por ID",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Exibir Usuário por email",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/{email}",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"{email}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Exibir Usuários",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NAZ21haWwuY29tIiwiaWQiOjEsImVtYWlsIjoibWFyY29zQGdtYWlsLmNvbSIsIm5vbWUiOiJNYXJjb3MgUGF1bG8iLCJ0aXBvVXN1YXJpbyI6IlVTVUFSSU9fQ09NVU0iLCJjcGYiOiIxMjMuMTIzLjEyMy0xMSIsImRhdGFOYXNjIjoiMTAvMDEvMTk4OSIsImlhdCI6MTc0NzAwMDQ4MiwiZXhwIjoxNzQ3MDg2ODgyfQ.NTPIpcfVjSTQfujDEHVOcoWX0mNEg0ouWNjqiLP_uGs",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Produto",
-			"item": [
-				{
-					"name": "Adicionar produto",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NAZ21haWwuY29tIiwiaWQiOjEsImVtYWlsIjoibWFyY29zQGdtYWlsLmNvbSIsIm5vbWUiOiJNYXJjb3MgUGF1bG8iLCJ0aXBvVXN1YXJpbyI6IlVTVUFSSU9fQ09NVU0iLCJjcGYiOiIxMjMuMTIzLjEyMy0xMSIsImRhdGFOYXNjIjoiMTAvMDEvMTk4OSIsImlhdCI6MTc0NzAwMTU0NSwiZXhwIjoxNzQ3MDg3OTQ1fQ.RxUA2go7e4Cd5tvYkBbpfk7RHgWumXRtihriisNn77g",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"nome\": \"Coca-Cola Lata 350Ml\",\r\n  \"preco\": 5.90,\r\n  \"quantidade\": 25,\r\n  \"ingredientes\": \"\",\r\n  \"categoriaProduto\": \"REFRIGERANTE\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/produtos",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"produtos"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Listar produto",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NAZ21haWwuY29tIiwiaWQiOjEsImVtYWlsIjoibWFyY29zQGdtYWlsLmNvbSIsIm5vbWUiOiJNYXJjb3MgUGF1bG8iLCJ0aXBvVXN1YXJpbyI6IlVTVUFSSU9fQ09NVU0iLCJjcGYiOiIxMjMuMTIzLjEyMy0xMSIsImRhdGFOYXNjIjoiMTAvMDEvMTk4OSIsImlhdCI6MTc0Njk5NDgzNiwiZXhwIjoxNzQ3MDgxMjM2fQ.ytF80RM55DUHykjOeWbaO8OsZDWC6eP4wtCB3JrE7oI",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/produtos",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"produtos"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Listar produtos por ID",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NAZ21haWwuY29tIiwiaWQiOjEsImVtYWlsIjoibWFyY29zQGdtYWlsLmNvbSIsIm5vbWUiOiJNYXJjb3MgUGF1bG8iLCJ0aXBvVXN1YXJpbyI6IlVTVUFSSU9fQ09NVU0iLCJjcGYiOiIxMjMuMTIzLjEyMy0xMSIsImRhdGFOYXNjIjoiMTAvMDEvMTk4OSIsImlhdCI6MTc0Njk5NDgzNiwiZXhwIjoxNzQ3MDgxMjM2fQ.ytF80RM55DUHykjOeWbaO8OsZDWC6eP4wtCB3JrE7oI",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/produtos/1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"produtos",
-								"1"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Pedido",
-			"item": [
-				{
-					"name": "Criar Pedido",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NAZ21haWwuY29tIiwiaWQiOjEsImVtYWlsIjoibWFyY29zQGdtYWlsLmNvbSIsIm5vbWUiOiJNYXJjb3MgUGF1bG8iLCJ0aXBvVXN1YXJpbyI6IkNMSUVOVEUiLCJjcGYiOiIxMjMuMTIzLjEyMy0xMSIsImRhdGFOYXNjIjoiMTk4OS0wMS0xMCIsImlhdCI6MTc0NzAwMzk1MSwiZXhwIjoxNzQ3MDkwMzUxfQ.dKYMOXxVPs0kF3ayCyVT088bwPZtOl1v66KgEmkeniI",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"clienteId\": 1,\r\n  \"nomeCliente\": \"Marcos Paulo\",\r\n  \"telefone\": \"(11) 99999-9999\",\r\n  \"enderecoId\": 1, \r\n  \"observacao\": \"Sem cebola na pizza\",\r\n  \"tipoEntrega\": \"DELIVERY\",\r\n  \"itens\": [\r\n    {\r\n      \"produto\": [1, 2],\r\n      \"quantidade\": 1,\r\n      \"tamanhoPizza\": \"MEIO_A_MEIO\",\r\n      \"bordaRecheada\": \"CATUPIRY\"\r\n    },\r\n    {\r\n      \"produto\": [3],\r\n      \"quantidade\": 1\r\n    }\r\n  ]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/pedidos",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"pedidos"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Listar pedidos",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NAZ21haWwuY29tIiwiaWQiOjEsImVtYWlsIjoibWFyY29zQGdtYWlsLmNvbSIsIm5vbWUiOiJNYXJjb3MgUGF1bG8iLCJ0aXBvVXN1YXJpbyI6IkNMSUVOVEUiLCJjcGYiOiIxMjMuMTIzLjEyMy0xMSIsImRhdGFOYXNjIjoiMTk4OS0wMS0xMCIsImlhdCI6MTc0NzAwMzk1MSwiZXhwIjoxNzQ3MDkwMzUxfQ.dKYMOXxVPs0kF3ayCyVT088bwPZtOl1v66KgEmkeniI",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/pedidos",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"pedidos"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Atualizar pedido",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NAZ21haWwuY29tIiwiaWQiOjEsImVtYWlsIjoibWFyY29zQGdtYWlsLmNvbSIsIm5vbWUiOiJNYXJjb3MgUGF1bG8iLCJ0aXBvVXN1YXJpbyI6IkNMSUVOVEUiLCJjcGYiOiIxMjMuMTIzLjEyMy0xMSIsImRhdGFOYXNjIjoiMTk4OS0wMS0xMCIsImlhdCI6MTc0NzAwNDE2NSwiZXhwIjoxNzQ3MDkwNTY1fQ.V9X1zRa-XOzf4gv1ZCNorHuAXCj6cLMbsixnjU0VD0w",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"status\": \"EM_PREPARO\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/pedidos/1/status",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"pedidos",
-								"1",
-								"status"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Listar pedido por ID",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NAZ21haWwuY29tIiwiaWQiOjEsImVtYWlsIjoibWFyY29zQGdtYWlsLmNvbSIsIm5vbWUiOiJNYXJjb3MgUGF1bG8iLCJ0aXBvVXN1YXJpbyI6IkNMSUVOVEUiLCJjcGYiOiIxMjMuMTIzLjEyMy0xMSIsImRhdGFOYXNjIjoiMTk4OS0wMS0xMCIsImlhdCI6MTc0NzAwNDE2NSwiZXhwIjoxNzQ3MDkwNTY1fQ.V9X1zRa-XOzf4gv1ZCNorHuAXCj6cLMbsixnjU0VD0w",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/pedidos/1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"pedidos",
-								"1"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Endereço",
-			"item": [
-				{
-					"name": "Adicionar endereço",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwZWRyb2JveGxpdmU2NDE0QGdtYWlsLmNvbSIsImlkIjoyLCJlbWFpbCI6InBlZHJvYm94bGl2ZTY0MTRAZ21haWwuY29tIiwibm9tZSI6IlBlZHJvIFBpcmVzIiwidGlwb1VzdWFyaW8iOiJVU1VBUklPX0NPTVVNIiwiY3BmIjoiMTIzLjEyMy4xMjMtMTEiLCJkYXRhTmFzYyI6IjEwLzAxLzE5ODkiLCJpYXQiOjE3NDg1NTYzNTMsImV4cCI6MTc0ODY0Mjc1M30.i3CxyK6mdWR7YoxjGj8_OsmtuylcK36bRVRT0x3E9Vo",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"rua\": \"Rua Haddock Lobo\",\r\n    \"numero\": 595,\r\n    \"bairro\": \"Consolação\",\r\n    \"complemento\": \"Digital Building\",\r\n    \"cidade\": \"São Paulo\",\r\n    \"estado\": \"SP\",\r\n    \"cep\": \"01414-001\",\r\n    \"usuarioId\": 2\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/enderecos",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"enderecos"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Atualizar endereço",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtYXJjb3NAZ21haWwuY29tIiwiaWQiOjEsImVtYWlsIjoibWFyY29zQGdtYWlsLmNvbSIsIm5vbWUiOiJNYXJjb3MgUGF1bG8iLCJ0aXBvVXN1YXJpbyI6IlVTVUFSSU9fQ09NVU0iLCJjcGYiOiIxMjMuMTIzLjEyMy0xMSIsImRhdGFOYXNjIjoiMTAvMDEvMTk4OSIsImlhdCI6MTc0NzAwMTcyNCwiZXhwIjoxNzQ3MDg4MTI0fQ.bqAw_5rO-wX75vr8rCagH3CSeXGBlyYFcDQMuBl778E",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"rua\": \"Rua Haddock Lobo\",\r\n    \"numero\": 595,\r\n    \"bairro\": \"Consolação\",\r\n    \"complemento\": \"Digital Building\",\r\n    \"cidade\": \"São Paulo\",\r\n    \"estado\": \"SP\",\r\n    \"cep\": \"01414-001\",\r\n    \"usuarioId\": 1\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/enderecos/{usuarioId}/{enderecoId}",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"enderecos",
-								"{usuarioId}",
-								"{enderecoId}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Listar endereços",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/enderecos",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"enderecos"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Listar endereços por Id",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/app-service/api/enderecos/1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"app-service",
-								"api",
-								"enderecos",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Buscar endereço por email",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwZWRyb2JveGxpdmU2NDE0QGdtYWlsLmNvbSIsImlkIjoyLCJlbWFpbCI6InBlZHJvYm94bGl2ZTY0MTRAZ21haWwuY29tIiwibm9tZSI6IlBlZHJvIFBpcmVzIiwidGlwb1VzdWFyaW8iOiJVU1VBUklPX0NPTVVNIiwiY3BmIjoiMTIzLjEyMy4xMjMtMTEiLCJkYXRhTmFzYyI6IjEwLzAxLzE5ODkiLCJpYXQiOjE3NDg1NTYzNTMsImV4cCI6MTc0ODY0Mjc1M30.i3CxyK6mdWR7YoxjGj8_OsmtuylcK36bRVRT0x3E9Vo",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/enderecos/pedroboxlive6414@gmail.com",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"enderecos",
-								"pedroboxlive6414@gmail.com"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Password",
-			"item": [
-				{
-					"name": "Request de senha",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"aaa@gmail.com\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/password-reset/request",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"password-reset",
-								"request"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Reset de senha",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"token\": \"\",\r\n    \"newPassword\": \"\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8081/api/password-reset/reset",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8081",
-							"path": [
-								"api",
-								"password-reset",
-								"reset"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Atendente",
-			"item": [
-				{
-					"name": "Cadastrar Atendente",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwZWRyb2JveGxpdmU2NDE0QGdtYWlsLmNvbSIsImlkIjoxLCJlbWFpbCI6InBlZHJvYm94bGl2ZTY0MTRAZ21haWwuY29tIiwibm9tZSI6InAgcGlyZXMiLCJ0aXBvVXN1YXJpbyI6IlVTVUFSSU9fQ09NVU0iLCJjcGYiOiIxMjIuMTIyLjExMi05OSIsImRhdGFOYXNjIjoiMjQvMDIvMjAwNiIsImlhdCI6MTc0NjkzMTc1OCwiZXhwIjoxNzQ3MDE4MTU4fQ.TjqEjjS6QhvSXQBfmHW4CE-KBDlPxzNYlzC4gP7dRoo",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "",
-								"value": "",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"nome\": \"Pedro Pires\",\r\n  \"email\": \"piresaa@gmail.com\",\r\n  \"dataNasc\": \"20/02/1999\",\r\n  \"cpf\": \"123.123.123-11\",\r\n  \"senha\": \"1234\",\r\n  \"confirmarSenha\": \"1234\",\r\n  \"telefone\": \"11993742094\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/cadastro/atendente",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"cadastro",
-								"atendente"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Admin",
-			"item": [
-				{
-					"name": "Cadastrar Admin",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwZWRyb2JveGxpdmU2NDE0QGdtYWlsLmNvbSIsImlkIjoxLCJlbWFpbCI6InBlZHJvYm94bGl2ZTY0MTRAZ21haWwuY29tIiwibm9tZSI6InAgcGlyZXMiLCJ0aXBvVXN1YXJpbyI6IlVTVUFSSU9fQ09NVU0iLCJjcGYiOiIxMjIuMTIyLjExMi05OSIsImRhdGFOYXNjIjoiMjQvMDIvMjAwNiIsImlhdCI6MTc0NjkzMTc1OCwiZXhwIjoxNzQ3MDE4MTU4fQ.TjqEjjS6QhvSXQBfmHW4CE-KBDlPxzNYlzC4gP7dRoo",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "",
-								"value": "",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"nome\": \"Pedro Pires\",\r\n  \"email\": \"piresaa@gmail.com\",\r\n  \"dataNasc\": \"20/02/1999\",\r\n  \"cpf\": \"123.123.123-11\",\r\n  \"senha\": \"1234\",\r\n  \"confirmarSenha\": \"1234\",\r\n  \"telefone\": \"11993742094\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/api/cadastro/admin",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"cadastro",
-								"admin"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Dashboard",
-			"item": [
-				{
-					"name": "Listar KPIs",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/dashboard/kpis",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"dashboard",
-								"kpis"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Faturamento Anual",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/dashboard/kpis/faturamento/{ano}",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"dashboard",
-								"kpis",
-								"faturamento",
-								"{ano}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Faturamento Mensal",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/dashboard/kpis/faturamento/{ano}/{mes}",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"dashboard",
-								"kpis",
-								"faturamento",
-								"{ano}",
-								"{mes}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Ultimos 7 dias",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwZWRyb2JveGxpdmU2NDE0QGdtYWlsLmNvbSIsImlkIjoyLCJlbWFpbCI6InBlZHJvYm94bGl2ZTY0MTRAZ21haWwuY29tIiwibm9tZSI6Ik1hcmNvcyBQYXVsbyIsInRpcG9Vc3VhcmlvIjoiVVNVQVJJT19DT01VTSIsImNwZiI6IjEyMy4xMjMuMTIzLTExIiwiZGF0YU5hc2MiOiIxMC8wMS8xOTg5IiwiaWF0IjoxNzQ4NzIyODc0LCJleHAiOjE3NDg4MDkyNzR9.7PulOsQ4JGfYX5QvBF-qNxDGh5jOz9Uv_NGr_1JABQU",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/dashboard/kpis/vendas/ultimos-sete-dias",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"dashboard",
-								"kpis",
-								"vendas",
-								"ultimos-sete-dias"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Vendas por categoria",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwZWRyb2JveGxpdmU2NDE0QGdtYWlsLmNvbSIsImlkIjoyLCJlbWFpbCI6InBlZHJvYm94bGl2ZTY0MTRAZ21haWwuY29tIiwibm9tZSI6Ik1hcmNvcyBQYXVsbyIsInRpcG9Vc3VhcmlvIjoiVVNVQVJJT19DT01VTSIsImNwZiI6IjEyMy4xMjMuMTIzLTExIiwiZGF0YU5hc2MiOiIxMC8wMS8xOTg5IiwiaWF0IjoxNzQ4NzIyODc0LCJleHAiOjE3NDg4MDkyNzR9.7PulOsQ4JGfYX5QvBF-qNxDGh5jOz9Uv_NGr_1JABQU",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/dashboard/kpis/vendas/categoria/{ano}/{mes}",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"dashboard",
-								"kpis",
-								"vendas",
-								"categoria",
-								"{ano}",
-								"{mes}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "KPIs principais",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/api/dashboard/kpis/cards",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"dashboard",
-								"kpis",
-								"cards"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		}
-	]
+  "info": {
+    "name": "Napolitech - Ajustada",
+    "_postman_id": "napolitech-ajustada-001",
+    "description": "Collection ajustada para uso com mock e ambiente Local.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailLogin}}\",\n  \"senha\": \"{{senhaLogin}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/login", "host": ["{{baseUrl}}"], "path": ["api", "login"] }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if(json.token){",
+                  "   pm.environment.set('token', json.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "Usuário",
+      "item": [
+        {
+          "name": "Exibir Usuário por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/1"
+          }
+        },
+        {
+          "name": "Exibir Usuário por Email",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/email/marcos@gmail.com"
+          }
+        },
+        {
+          "name": "Atualizar Usuário",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Marcos Paulo\",\n  \"email\": \"marcos@gmail.com\",\n  \"senha\": \"P@ssw0rd\",\n  \"cpf\": \"123.123.123-11\",\n  \"telefone\": \"(11) 99999-9999\",\n  \"dataNasc\": \"1989-01-10\"\n}"
+            },
+            "url": "{{baseUrl}}/api/1"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Produto",
+      "item": [
+        {
+          "name": "Listar Produtos",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/produtos"
+          }
+        },
+        {
+          "name": "Produto por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/produtos/1"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Pedido",
+      "item": [
+        {
+          "name": "Criar Pedido",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 1,\n  \"nomeCliente\": \"Marcos Paulo\",\n  \"telefone\": \"(11) 99999-9999\",\n  \"enderecoId\": 1,\n  \"observacao\": \"Sem cebola\",\n  \"tipoEntrega\": \"DELIVERY\",\n  \"itens\": [\n    {\n      \"produto\": [1, 2],\n      \"quantidade\": 1,\n      \"tamanhoPizza\": \"MEIO_A_MEIO\",\n      \"bordaRecheada\": \"CATUPIRY\"\n    },\n    {\n      \"produto\": [3],\n      \"quantidade\": 1\n    }\n  ]\n}"
+            },
+            "url": "{{baseUrl}}/api/pedidos"
+          }
+        },
+        {
+          "name": "Listar Pedidos",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/pedidos"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Endereço",
+      "item": [
+        {
+          "name": "Listar Endereços",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/enderecos"
+          }
+        },
+        {
+          "name": "Buscar por Email",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/enderecos/marcos@gmail.com"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "KPIs",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/dashboard/kpis"
+          }
+        }
+      ]
+    }
+  ]
 }
