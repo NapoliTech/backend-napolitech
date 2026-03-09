@@ -37,6 +37,8 @@ services:
       BROKER_ROUTING_KEY: pedidos-routing-key
       REDIS_HOST: redis
 
+      OLLAMA_BASE_URL: http://ollama:11434
+
     depends_on:
       db:
         condition: service_healthy
@@ -127,8 +129,24 @@ services:
     volumes:
       - redisinsight_data:/data
 
+  # IA - Ollama (modelos LLM local, upsell no checkout)
+  # Apos subir os containers, baixe o modelo uma unica vez:
+  #   docker exec ollama ollama pull llama3.2
+  # Para CPU mais rapido use o modelo 1B: ollama pull llama3.2:1b
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - network-napolitech
+    restart: unless-stopped
+
 volumes:
   mysql_data:
   rabbitmq_data:
   redis_data:
   redisinsight_data:
+  ollama_data:
