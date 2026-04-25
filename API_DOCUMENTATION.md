@@ -9,8 +9,10 @@ API REST para sistema de gerenciamento de pizzaria com os seguintes modulos:
 - **Enderecos** - Gerenciamento de enderecos de entrega
 - **Password Reset** - Recuperacao de senha
 - **Dashboard KPIs** - Metricas e indicadores
+- **Llama Agent** - Integracao opcional com agente de IA
 
-**Base URL:** `http://localhost:8080`
+**Base URL:** `PUBLIC_API_BASE_URL` (ex.: `http://localhost:8080/api`)
+> Configure `PUBLIC_API_BASE_URL` para apontar para a URL publica do backend (ex.: ngrok) sempre terminando com `/api`.
 
 ---
 
@@ -1020,6 +1022,29 @@ GET /api/dashboard/kpis/cards
 
 ---
 
+## 7. LLAMA AGENT (`/api/llama`)
+
+### 7.1 Enviar prompt para o agente
+```
+POST /api/llama
+```
+
+**Request Body:** (payload repassado ao agente Llama configurado)
+```json
+{
+  "prompt": "Sugira um combo para o cliente",
+  "contexto": {
+    "clienteId": 123
+  }
+}
+```
+
+**Response:**
+- Retorna o JSON de resposta do agente configurado em `LLAMA_API_URL`.
+- Em caso de indisponibilidade, retorna `503`.
+
+---
+
 ## RESUMO DE ENDPOINTS
 
 ### Usuarios (9 endpoints)
@@ -1077,6 +1102,11 @@ GET /api/dashboard/kpis/cards
 | GET | `/api/dashboard/kpis/vendas/categoria/{ano}/{mes}` | Vendas por categoria |
 | GET | `/api/dashboard/kpis/cards` | Cards do dashboard |
 
+### Llama Agent (1 endpoint)
+| Metodo | Endpoint | Descricao |
+|--------|----------|-----------|
+| POST | `/api/llama` | Enviar prompt para o agente |
+
 ---
 
 ## CODIGOS DE RESPOSTA HTTP
@@ -1108,6 +1138,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
-**Total de Endpoints: 31**
+**Total de Endpoints: 32**
 
 *Documentacao gerada em 07/03/2026*

@@ -93,6 +93,30 @@ curl -X POST http://localhost:8080/api/cadastro \
 
 ---
 
+## Rodando com ngrok (dev/staging)
+
+1. Suba o backend normalmente (porta 8080 por padrao).
+2. Em outro terminal, exponha a porta com ngrok:
+   ```bash
+   ngrok http 8080
+   ```
+3. Copie a URL HTTPS gerada (ex.: `https://abcd1234.ngrok-free.app`).
+4. Configure as variaveis de ambiente do backend:
+   ```dotenv
+   PUBLIC_API_BASE_URL=https://abcd1234.ngrok-free.app/api
+   FRONTEND_ALLOWED_ORIGINS=https://abcd1234.ngrok-free.app,http://localhost:19006
+   JWT_SECRET=defina-uma-chave-com-32-caracteres-ou-mais
+   ```
+5. Reinicie o backend para aplicar as variaveis.
+6. No front-end Expo/React Native, defina:
+   ```dotenv
+   EXPO_PUBLIC_API_BASE_URL=https://abcd1234.ngrok-free.app/api
+   ```
+
+> Nao use IP fixo no front. Sempre use a URL do ngrok ou do ambiente.
+
+---
+
 ## Comandos uteis
 
 | Comando | Descricao |
