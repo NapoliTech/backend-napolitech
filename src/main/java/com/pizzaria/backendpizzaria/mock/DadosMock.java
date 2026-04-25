@@ -1,180 +1,81 @@
 package com.pizzaria.backendpizzaria.mock;
 
-import com.pizzaria.backendpizzaria.domain.Endereco;
 import com.pizzaria.backendpizzaria.domain.Enum.CategoriaProduto;
 import com.pizzaria.backendpizzaria.domain.Produto;
-import com.pizzaria.backendpizzaria.domain.Usuario;
-import com.pizzaria.backendpizzaria.repository.EnderecoRepository;
 import com.pizzaria.backendpizzaria.repository.ProdutoRepository;
-import com.pizzaria.backendpizzaria.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
 
-@Service
-public class DadosMock {
+@Component
+public class DadosMock implements ApplicationRunner {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private EnderecoRepository enderecoRepository;
+    private static final Logger log = LoggerFactory.getLogger(DadosMock.class);
 
     @Autowired
     private ProdutoRepository produtoRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Override
+    public void run(ApplicationArguments args) {
+        carregarCardapio();
+    }
 
-    public void carregarDados() {
-        Usuario usuario = new Usuario();
-        usuario.setNome("Marcos Paulo");
-        usuario.setEmail("marcos@gmail.com");
-        usuario.setSenha(passwordEncoder.encode("A@123456789"));
-        usuario.setCpf("123.123.123-11");
-        usuario.setTelefone("(11) 99999-9999");
-        usuario.setDataNasc("1989-01-10");
-        usuario.setTipoUsuario("CLIENTE");
-        usuario.setPedidos(0L);
+    private void carregarCardapio() {
+        log.info("Iniciando carga do cardápio mock...");
 
-        Usuario usuarioSalvo = usuarioRepository.save(usuario);
+        // ── Pizzas Salgadas ──────────────────────────────────────────
+        salvar("Pizza de Calabresa",              39.90, 10, "Calabresa, Cebola, Orégano, Queijo Mussarela",                         CategoriaProduto.PIZZA);
+        salvar("Pizza Portuguesa",                42.90, 10, "Presunto, Ovo, Cebola, Azeitona, Queijo Mussarela, Orégano",           CategoriaProduto.PIZZA);
+        salvar("Pizza de Frango com Catupiry",    44.90, 10, "Frango desfiado, Catupiry, Queijo Mussarela, Orégano",                 CategoriaProduto.PIZZA);
+        salvar("Pizza Quatro Queijos",            49.90, 10, "Mussarela, Gorgonzola, Parmesão, Catupiry",                           CategoriaProduto.PIZZA);
+        salvar("Pizza Margherita",                39.90, 10, "Molho de tomate, Mussarela, Manjericão fresco",                       CategoriaProduto.PIZZA);
+        salvar("Pizza de Pepperoni",              47.90, 10, "Pepperoni, Queijo Mussarela, Molho de tomate",                        CategoriaProduto.PIZZA);
+        salvar("Pizza de Carne Seca com Catupiry",52.90, 10, "Carne seca desfiada, Catupiry, Cebola roxa, Mussarela",               CategoriaProduto.PIZZA);
+        salvar("Pizza Vegetariana",               45.90, 10, "Tomate, Pimentão, Cebola, Brócolis, Azeitona, Mussarela",             CategoriaProduto.PIZZA);
+        salvar("Pizza de Bacon",                  46.90, 10, "Bacon crocante, Mussarela, Molho de tomate",                         CategoriaProduto.PIZZA);
+        salvar("Pizza de Camarão",                59.90, 10, "Camarão, Catupiry, Mussarela, Orégano",                               CategoriaProduto.PIZZA);
+        salvar("Pizza Napolitana",                43.90, 10, "Tomate, Mussarela, Alho, Azeite, Orégano",                            CategoriaProduto.PIZZA);
+        salvar("Pizza de Atum",                   44.90, 10, "Atum, Cebola, Azeitona, Mussarela, Orégano",                         CategoriaProduto.PIZZA);
 
-        Endereco endereco = new Endereco();
-        endereco.setRua("Rua Haddock Lobo");
-        endereco.setBairro("Consolação");
-        endereco.setNumero(595);
-        endereco.setComplemento("Digital Building");
-        endereco.setCidade("São Paulo");
-        endereco.setEstado("SP");
-        endereco.setCep("01414-001");
-        endereco.setUsuarioId(usuarioSalvo.getIdUsuario());
+        // ── Pizzas Doces ─────────────────────────────────────────────
+        salvar("Pizza de Chocolate",              39.90, 10, "Chocolate ao leite, Granulado",                                       CategoriaProduto.PIZZA_DOCE);
+        salvar("Pizza de Brigadeiro",             42.90, 10, "Chocolate, Granulado, Leite condensado",                              CategoriaProduto.PIZZA_DOCE);
+        salvar("Pizza de Banana com Canela",      37.90, 10, "Banana, Açúcar, Canela, Chocolate branco",                           CategoriaProduto.PIZZA_DOCE);
+        salvar("Pizza Romeu e Julieta",           41.90, 10, "Goiabada, Queijo Minas",                                             CategoriaProduto.PIZZA_DOCE);
+        salvar("Pizza de Nutella",                45.90, 10, "Nutella, Morango, Chantilly",                                         CategoriaProduto.PIZZA_DOCE);
+        salvar("Pizza de Prestígio",              43.90, 10, "Chocolate ao leite, Coco ralado, Leite condensado",                   CategoriaProduto.PIZZA_DOCE);
 
-        enderecoRepository.save(endereco);
-        // Pizzas Salgadas
-        Produto calabresa = new Produto();
-        calabresa.setNome("Pizza de Calabresa");
-        calabresa.setPreco(39.90);
-        calabresa.setQuantidadeEstoque(10);
-        calabresa.setIngredientes("Calabresa, Cebola, Orégano, Queijo Mussarela");
-        calabresa.setCategoriaProduto(CategoriaProduto.PIZZA);
+        // ── Bebidas ──────────────────────────────────────────────────
+        salvar("Coca-Cola Lata 350ml",             5.90, 30, "",                                                                    CategoriaProduto.BEBIDAS);
+        salvar("Coca-Cola Zero Lata 350ml",        5.90, 30, "",                                                                    CategoriaProduto.BEBIDAS);
+        salvar("Guaraná Lata 350ml",               5.50, 30, "",                                                                    CategoriaProduto.BEBIDAS);
+        salvar("Sprite Lata 350ml",                5.50, 30, "",                                                                    CategoriaProduto.BEBIDAS);
+        salvar("Fanta Laranja Lata 350ml",         5.50, 30, "",                                                                    CategoriaProduto.BEBIDAS);
+        salvar("Água Mineral 500ml",               3.50, 50, "",                                                                    CategoriaProduto.BEBIDAS);
+        salvar("Água com Gás 500ml",               4.00, 50, "",                                                                    CategoriaProduto.BEBIDAS);
+        salvar("Suco de Laranja Natural 400ml",    9.90, 20, "",                                                                    CategoriaProduto.BEBIDAS);
+        salvar("Suco de Limão Natural 400ml",      9.90, 20, "",                                                                    CategoriaProduto.BEBIDAS);
+        salvar("Cerveja Heineken Long Neck 330ml", 9.90, 25, "",                                                                    CategoriaProduto.BEBIDAS);
+        salvar("Cerveja Stella Artois 330ml",      9.90, 25, "",                                                                    CategoriaProduto.BEBIDAS);
 
-        Produto portuguesa = new Produto();
-        portuguesa.setNome("Pizza Portuguesa");
-        portuguesa.setPreco(42.90);
-        portuguesa.setQuantidadeEstoque(10);
-        portuguesa.setIngredientes("Presunto, Ovo, Cebola, Azeitona, Queijo Mussarela, Orégano");
-        portuguesa.setCategoriaProduto(CategoriaProduto.PIZZA);
+        log.info("Carga do cardápio mock concluída.");
+    }
 
-        Produto frangoCatupiry = new Produto();
-        frangoCatupiry.setNome("Pizza de Frango com Catupiry");
-        frangoCatupiry.setPreco(44.90);
-        frangoCatupiry.setQuantidadeEstoque(10);
-        frangoCatupiry.setIngredientes("Frango desfiado, Catupiry, Queijo Mussarela, Orégano");
-        frangoCatupiry.setCategoriaProduto(CategoriaProduto.PIZZA);
-
-        Produto quatroQueijos = new Produto();
-        quatroQueijos.setNome("Pizza Quatro Queijos");
-        quatroQueijos.setPreco(49.90);
-        quatroQueijos.setQuantidadeEstoque(10);
-        quatroQueijos.setIngredientes("Mussarela, Gorgonzola, Parmesão, Catupiry");
-        quatroQueijos.setCategoriaProduto(CategoriaProduto.PIZZA);
-
-        Produto margherita = new Produto();
-        margherita.setNome("Pizza Margherita");
-        margherita.setPreco(39.90);
-        margherita.setQuantidadeEstoque(10);
-        margherita.setIngredientes("Molho de tomate, Mussarela, Manjericão fresco");
-        margherita.setCategoriaProduto(CategoriaProduto.PIZZA);
-
-        Produto pepperoni = new Produto();
-        pepperoni.setNome("Pizza de Pepperoni");
-        pepperoni.setPreco(47.90);
-        pepperoni.setQuantidadeEstoque(10);
-        pepperoni.setIngredientes("Pepperoni, Queijo Mussarela, Molho de tomate");
-        pepperoni.setCategoriaProduto(CategoriaProduto.PIZZA);
-
-        Produto carneSeca = new Produto();
-        carneSeca.setNome("Pizza de Carne Seca com Catupiry");
-        carneSeca.setPreco(52.90);
-        carneSeca.setQuantidadeEstoque(10);
-        carneSeca.setIngredientes("Carne seca desfiada, Catupiry, Cebola roxa, Mussarela");
-        carneSeca.setCategoriaProduto(CategoriaProduto.PIZZA);
-
-        Produto vegetariana = new Produto();
-        vegetariana.setNome("Pizza Vegetariana");
-        vegetariana.setPreco(45.90);
-        vegetariana.setQuantidadeEstoque(10);
-        vegetariana.setIngredientes("Tomate, Pimentão, Cebola, Brócolis, Azeitona, Mussarela");
-        vegetariana.setCategoriaProduto(CategoriaProduto.PIZZA);
-
-        Produto bacon = new Produto();
-        bacon.setNome("Pizza de Bacon");
-        bacon.setPreco(46.90);
-        bacon.setQuantidadeEstoque(10);
-        bacon.setIngredientes("Bacon crocante, Mussarela, Molho de tomate");
-        bacon.setCategoriaProduto(CategoriaProduto.PIZZA);
-
-        Produto camarão = new Produto();
-        camarão.setNome("Pizza de Camarão");
-        camarão.setPreco(59.90);
-        camarão.setQuantidadeEstoque(10);
-        camarão.setIngredientes("Camarão, Catupiry, Mussarela, Orégano");
-        camarão.setCategoriaProduto(CategoriaProduto.PIZZA);
-
-        // Pizzas Doces
-        Produto chocolate = new Produto();
-        chocolate.setNome("Pizza de Chocolate");
-        chocolate.setPreco(39.90);
-        chocolate.setQuantidadeEstoque(10);
-        chocolate.setIngredientes("Chocolate ao leite, Granulado");
-        chocolate.setCategoriaProduto(CategoriaProduto.PIZZA_DOCE);
-
-        Produto brigadeiro = new Produto();
-        brigadeiro.setNome("Pizza de Brigadeiro");
-        brigadeiro.setPreco(42.90);
-        brigadeiro.setQuantidadeEstoque(10);
-        brigadeiro.setIngredientes("Chocolate, Granulado, Leite condensado");
-        brigadeiro.setCategoriaProduto(CategoriaProduto.PIZZA_DOCE);
-
-        Produto bananaCanela = new Produto();
-        bananaCanela.setNome("Pizza de Banana com Canela");
-        bananaCanela.setPreco(37.90);
-        bananaCanela.setQuantidadeEstoque(10);
-        bananaCanela.setIngredientes("Banana, Açúcar, Canela, Chocolate branco");
-        bananaCanela.setCategoriaProduto(CategoriaProduto.PIZZA_DOCE);
-
-        Produto romeuJulieta = new Produto();
-        romeuJulieta.setNome("Pizza Romeu e Julieta");
-        romeuJulieta.setPreco(41.90);
-        romeuJulieta.setQuantidadeEstoque(10);
-        romeuJulieta.setIngredientes("Goiabada, Queijo Minas");
-        romeuJulieta.setCategoriaProduto(CategoriaProduto.PIZZA_DOCE);
-
-        // Salvando todos
-        produtoRepository.save(calabresa);
-        produtoRepository.save(portuguesa);
-        produtoRepository.save(frangoCatupiry);
-        produtoRepository.save(quatroQueijos);
-        produtoRepository.save(margherita);
-        produtoRepository.save(pepperoni);
-        produtoRepository.save(carneSeca);
-        produtoRepository.save(vegetariana);
-        produtoRepository.save(bacon);
-        produtoRepository.save(camarão);
-        produtoRepository.save(chocolate);
-        produtoRepository.save(brigadeiro);
-        produtoRepository.save(bananaCanela);
-        produtoRepository.save(romeuJulieta);
-
-        // Bebidas (já tinha Coca, pode adicionar mais)
-        Produto guarana = new Produto();
-        guarana.setNome("Guaraná Lata 350Ml");
-        guarana.setPreco(5.50);
-        guarana.setQuantidadeEstoque(20);
-        guarana.setIngredientes("");
-        guarana.setCategoriaProduto(CategoriaProduto.BEBIDAS);
-
-        produtoRepository.save(guarana);
+    private void salvar(String nome, double preco, int estoque, String ingredientes, CategoriaProduto categoria) {
+        if (produtoRepository.existsByNome(nome)) {
+            log.debug("Produto '{}' já existe, pulando.", nome);
+            return;
+        }
+        Produto p = new Produto();
+        p.setNome(nome);
+        p.setPreco(preco);
+        p.setQuantidadeEstoque(estoque);
+        p.setIngredientes(ingredientes);
+        p.setCategoriaProduto(categoria);
+        produtoRepository.save(p);
+        log.info("Produto cadastrado: {}", nome);
     }
 }
-

@@ -1,0 +1,179 @@
+{
+  "identity": {
+    "role": "Agente ETL do banco de dados Napolitech",
+    "objetivo": "Conectar ao MySQL do projeto, entender o schema, executar INSERTs, criar tabelas e manipular dados com segurança. Sempre verificar constraints e chaves estrangeiras antes de inserir."
+  },
+
+  "conexao": {
+    "sgbd": "MySQL 8.0",
+    "host_externo": "localhost",
+    "host_interno_docker": "db",
+    "porta": 3306,
+    "database": "pizzaria_db",
+    "usuario": "napolitech",
+    "senha": "napolitech_dev",
+    "root_senha": "root",
+    "string_jdbc": "jdbc:mysql://localhost:3306/pizzaria_db?useSSL=false&allowPublicKeyRetrieval=true",
+    "comando_acesso_direto": "docker exec -it mysql-napolitech mysql -u napolitech -pnapolitech_dev pizzaria_db",
+    "obs": "O container MySQL deve estar rodando (docker compose up -d) para conectar via localhost:3306"
+  },
+
+  "schema": {
+    "database": "pizzaria_db",
+    "tabelas": {
+
+      "usuarios_cadastrados": {
+        "descricao": "Usuários do sistema (clientes, atendentes e admins)",
+        "colunas": {
+          "id_usuario": "BIGINT AUTO_INCREMENT PRIMARY KEY",
+          "nome": "VARCHAR(255) NOT NULL",
+          "email": "VARCHAR(255) NOT NULL UNIQUE",
+          "senha": "VARCHAR(255) NOT NULL — armazenada com BCrypt",
+          "cpf": "VARCHAR(255) NOT NULL",
+          "telefone": "VARCHAR(255) NOT NULL",
+          "pedidos": "BIGINT NOT NULL DEFAULT 0 — contador de pedidos do usuário",
+          "data_nasc": "VARCHAR(255) NOT NULL — formato dd/MM/yyyy",
+          "tipo_usuario": "VARCHAR(255) NOT NULL — valores: CLIENTE | ATENDENTE | ADMIN",
+          "id_usuario (FK)": "BIGINT — FK para endereco.id_usuario (OneToOne)"
+        },
+        "regras": [
+          "email deve ser único",
+          "senha deve ser hash BCrypt — NUNCA inserir senha em texto plano",
+          "tipo_usuario padrão para novos clientes: CLIENTE",
+          "pedidos começa em 0 e é incrementado a cada pedido criado"
+        ],
+        "exemplo_insert": "INSERT INTO usuarios_cadastrados (nome, email, senha, cpf, telefone, pedidos, data_nasc, tipo_usuario) VALUES ('João Silva', 'joao@email.com', '$2a$10$hashbcrypt...', '123.456.789-00', '11999999999', 0, '15/03/1990', 'CLIENTE');"
+      },
+
+      "endereco": {
+        "descricao": "Endereços vinculados a usuários (OneToOne com usuarios_cadastrados)",
+        "colunas": {
+          "id": "BIGINT AUTO_INCREMENT PRIMARY KEY",
+          "rua": "VARCHAR(255) NOT NULL",
+          "bairro": "VARCHAR(255) NOT NULL",
+          "numero": "INT NOT NULL",
+          "complemento": "VARCHAR(255) NULL",
+          "cidade": "VARCHAR(255) NOT NULL",
+          "estado": "VARCHAR(255) NOT NULL — sigla, ex: SP",
+          "cep": "VARCHAR(255) NOT NULL — ex: 01001-000",
+          "id_usuario (FK)": "BIGINT — FK para usuarios_cadastrados.id_usuario"
+        },
+        "regras": [
+          "Cada usuário pode ter no máximo um endereço (OneToOne)",
+          "Para vincular ao usuário, atualizar id_usuario na tabela endereco OU id_usuario na tabela usuarios_cadastrados"
+        ],
+        "exemplo_insert": "INSERT INTO endereco (rua, bairro, numero, complemento, cidade, estado, cep) VALUES ('Rua das Flores', 'Centro', 123, 'Apto 4', 'São Paulo', 'SP', '01310-100');"
+      },
+
+      "estoque_produtos": {
+        "descricao": "Catálogo de produtos da pizzaria (pizzas, bebidas, sobremesas etc.)",
+        "colunas": {
+          "id": "BIGINT AUTO_INCREMENT PRIMARY KEY",
+          "nome": "VARCHAR(255) — deve ser único na prática (mock verifica existsByNome)",
+          "preco": "DOUBLE NOT NULL",
+          "quantidade_estoque": "INT NOT NULL",
+          "ingredientes": "VARCHAR(255) NULL",
+          "categoria_produto": "VARCHAR(255) — enum armazenado como String"
+        },
+        "enum_categoria_produto": ["PIZZA", "PIZZA_DOCE", "BEBIDAS", "SOBREMESA", "PORCAO", "ESFIHA", "ESFIHA_DOCE"],
+        "regras": [
+          "O mock DadosMock popula esta tabela automaticamente no boot se estiver vazia",
+          "Não duplicar nomes — o mock usa existsByNome para evitar duplicação"
+        ],
+        "exemplo_insert": "INSERT INTO estoque_produtos (nome, preco, quantidade_estoque, ingredientes, categoria_produto) VALUES ('Pizza de Frango', 44.90, 10, 'Frango, Catupiry, Mussarela', 'PIZZA');"
+      },
+
+      "pedidos": {
+        "descricao": "Pedidos realizados pelos clientes",
+        "colunas": {
+          "id": "BIGINT AUTO_INCREMENT PRIMARY KEY",
+          "cliente_id": "BIGINT NOT NULL — FK para usuarios_cadastrados.id_usuario",
+          "endereco_id": "BIGINT NOT NULL — FK para endereco.id",
+          "nome_cliente": "VARCHAR(255)",
+          "status_pedido": "VARCHAR(255) — enum como String",
+          "preco_total": "DOUBLE — calculado a partir dos itens",
+          "observacao": "VARCHAR(255) NULL",
+          "tipo_entrega": "VARCHAR(255) — enum como String",
+          "data_pedido": "DATETIME"
+        },
+        "enum_status_pedido": ["RECEBIDO", "EM_PREPARO", "ENTREGUE", "ENCERRADO", "CANCELADO"],
+        "enum_tipo_entrega": ["RETIRADA", "DELIVERY", "ENCOMENDA"],
+        "regras": [
+          "cliente_id e endereco_id são obrigatórios — o usuário e endereço devem existir antes",
+          "status inicial sempre RECEBIDO",
+          "preco_total é soma dos preco_total de cada item_pedido vinculado",
+          "Ao criar pedido via API, o backend publica automaticamente no RabbitMQ"
+        ],
+        "exemplo_insert": "INSERT INTO pedidos (cliente_id, endereco_id, nome_cliente, status_pedido, preco_total, observacao, tipo_entrega, data_pedido) VALUES (1, 1, 'João Silva', 'RECEBIDO', 89.80, 'Sem cebola', 'DELIVERY', NOW());"
+      },
+
+      "item_pedido": {
+        "descricao": "Itens individuais de um pedido (cada produto dentro do pedido)",
+        "colunas": {
+          "id": "BIGINT AUTO_INCREMENT PRIMARY KEY",
+          "pedido_id": "BIGINT NOT NULL — FK para pedidos.id",
+          "produto_id": "BIGINT — FK para estoque_produtos.id",
+          "quantidade": "INT",
+          "tamanho_pizza": "VARCHAR(255) NULL — enum como String, só para pizzas",
+          "borda_recheada": "VARCHAR(255) NULL — enum como String",
+          "preco_total": "DOUBLE — preco_unitario * quantidade + adicional_borda"
+        },
+        "enum_tamanho_pizza": ["BROTO", "GRANDE", "TREM", "MEIO_A_MEIO"],
+        "enum_borda_recheada": {
+          "NORMAL": "+R$0,00",
+          "CHEDDAR": "+R$8,00",
+          "CATUPIRY": "+R$8,00",
+          "CHOCOLATE": "+R$10,00"
+        },
+        "regras": [
+          "pedido_id é obrigatório — o pedido deve existir antes",
+          "preco_total do item = produto.preco * quantidade + borda.valorAdicional",
+          "tamanho_pizza e borda_recheada são opcionais (para bebidas e não-pizzas)"
+        ],
+        "exemplo_insert": "INSERT INTO item_pedido (pedido_id, produto_id, quantidade, tamanho_pizza, borda_recheada, preco_total) VALUES (1, 3, 1, 'GRANDE', 'CATUPIRY', 52.90);"
+      },
+
+      "password_reset_token": {
+        "descricao": "Tokens temporários para reset de senha via email",
+        "colunas": {
+          "id": "BIGINT AUTO_INCREMENT PRIMARY KEY",
+          "token": "VARCHAR(255) — UUID gerado pelo sistema",
+          "user_id": "BIGINT NOT NULL — FK para usuarios_cadastrados.id_usuario",
+          "expiry_date": "DATETIME — normalmente 1h após criação"
+        },
+        "regras": [
+          "token deve ser único",
+          "registros expirados podem ser deletados com segurança",
+          "Não inserir manualmente — gerado pela API de reset de senha"
+        ],
+        "exemplo_insert": "INSERT INTO password_reset_token (token, user_id, expiry_date) VALUES ('uuid-gerado', 1, DATE_ADD(NOW(), INTERVAL 1 HOUR));"
+      }
+    }
+  },
+
+  "ordem_de_insercao": [
+    "1. endereco (sem FK dependente)",
+    "2. usuarios_cadastrados (FK: endereco.id)",
+    "3. estoque_produtos (sem FK dependente)",
+    "4. pedidos (FK: usuarios_cadastrados.id_usuario, endereco.id)",
+    "5. item_pedido (FK: pedidos.id, estoque_produtos.id)"
+  ],
+
+  "queries_uteis": {
+    "listar_tabelas": "SHOW TABLES;",
+    "ver_estrutura": "DESCRIBE <nome_tabela>;",
+    "listar_pedidos_com_cliente": "SELECT p.id, p.nome_cliente, p.status_pedido, p.preco_total, p.data_pedido FROM pedidos p JOIN usuarios_cadastrados u ON p.cliente_id = u.id_usuario ORDER BY p.data_pedido DESC LIMIT 20;",
+    "itens_de_um_pedido": "SELECT ip.id, ep.nome, ip.quantidade, ip.tamanho_pizza, ip.borda_recheada, ip.preco_total FROM item_pedido ip JOIN estoque_produtos ep ON ip.produto_id = ep.id WHERE ip.pedido_id = <ID>;",
+    "faturamento_total": "SELECT SUM(preco_total) AS faturamento FROM pedidos WHERE status_pedido NOT IN ('CANCELADO');",
+    "pedidos_por_status": "SELECT status_pedido, COUNT(*) AS total FROM pedidos GROUP BY status_pedido;",
+    "produtos_mais_vendidos": "SELECT ep.nome, SUM(ip.quantidade) AS total_vendido FROM item_pedido ip JOIN estoque_produtos ep ON ip.produto_id = ep.id GROUP BY ep.nome ORDER BY total_vendido DESC LIMIT 10;"
+  },
+
+  "avisos": [
+    "NUNCA inserir senha em texto plano em usuarios_cadastrados — deve ser hash BCrypt",
+    "Respeitar a ordem de inserção para não violar FKs",
+    "O Hibernate usa ddl-auto=update — novas colunas adicionadas nas entidades Java serão criadas automaticamente no próximo boot",
+    "Não alterar nomes de tabelas ou colunas diretamente no banco sem refletir nas entidades Java",
+    "Dados inseridos manualmente no banco bypassam as validações do Spring — garantir consistência manualmente"
+  ]
+}

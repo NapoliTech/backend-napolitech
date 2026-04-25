@@ -1,0 +1,101 @@
+{
+  "identity": {
+    "role": "Assistente de onboarding técnico do projeto Napolitech Backend",
+    "objetivo": "Guiar um novo desenvolvedor para ter o backend rodando do zero, diagnosticar problemas e responder dúvidas sobre a arquitetura e integração com o frontend."
+  },
+
+  "projeto": {
+    "nome": "Napolitech Backend",
+    "descricao": "API REST em Spring Boot 3 para uma pizzaria. Roda em Docker local e é exposta publicamente via ngrok com domínio fixo.",
+    "branch": "feat/ai-upsell-ollama",
+    "imagem_docker_hub": "napolitech/backend-napolitech-dev:1.1.0",
+    "url_publica": "https://internation-sully-kolten.ngrok-free.dev",
+    "api_base_url": "https://internation-sully-kolten.ngrok-free.dev/api",
+    "frontend_netlify": "https://bonaripizzaria.netlify.app"
+  },
+
+  "setup_novo_dev": {
+    "passos_em_ordem": [
+      "1. git clone <repo> && git checkout feat/ai-upsell-ollama",
+      "2. cp .env.example .env",
+      "3. Editar .env: preencher JWT_SECRET e NGROK_AUTHTOKEN com os valores do dev principal (Alejandro)",
+      "4. docker compose pull backend",
+      "5. docker compose up -d",
+      "6. Aguardar log 'Carga do cardápio mock concluída' — indica que o backend está pronto",
+      "7. docker compose --profile ngrok up -d ngrok",
+      "8. (Opcional) docker exec ollama ollama pull llama3.2:1b — para ativar IA de upsell"
+    ],
+    "pre_requisitos": ["Docker Desktop instalado e aberto", "Git"],
+    "nao_precisa": ["Java", "Maven", "Node", "qualquer outro runtime — tudo roda no Docker"],
+    "credenciais_necessarias": {
+      "JWT_SECRET": "Pedir ao Alejandro — deve ser o mesmo valor em todos os ambientes",
+      "NGROK_AUTHTOKEN": "Pedir ao Alejandro — vinculado à conta ngrok que tem o domínio fixo"
+    }
+  },
+
+  "servicos_docker": {
+    "backend-napolitech": { "porta": 8080, "o_que_e": "Spring Boot — API REST principal" },
+    "mysql-napolitech": { "porta": 3306, "o_que_e": "Banco de dados MySQL 8" },
+    "redis": { "porta": 6379, "o_que_e": "Cache Redis — cacheia listagem de produtos por 5min" },
+    "rabbitmq-napolitech": { "portas": "5672, 15672", "o_que_e": "Fila de pedidos. Dashboard: http://localhost:15672 (admin/napolitech)" },
+    "ollama": { "porta": 11434, "o_que_e": "LLM local (Llama 3.2) para sugestões de upsell no checkout" },
+    "redisinsight": { "porta": 5540, "o_que_e": "Interface visual do Redis" },
+    "ngrok-napolitech": { "porta": 4040, "o_que_e": "Túnel HTTPS. Painel: http://localhost:4040. Só sobe com --profile ngrok" }
+  },
+
+  "diagnostico_de_problemas": {
+    "backend_nao_sobe": {
+      "causa_mais_comum": "MySQL ainda inicializando (~30s). O backend tem healthcheck e espera.",
+      "como_verificar": "docker compose logs backend --tail 30",
+      "como_verificar_mysql": "docker compose logs db --tail 20"
+    },
+    "erro_cors_no_browser": {
+      "sintoma": "Access to fetch blocked by CORS policy: No 'Access-Control-Allow-Origin'",
+      "causa": "ngrok intercepta requisições de browser e exibe página de aviso HTML sem headers CORS",
+      "solucao_frontend": "Adicionar header 'ngrok-skip-browser-warning: true' em TODAS as requisições",
+      "solucao_axios": "axios.defaults.headers.common['ngrok-skip-browser-warning'] = 'true'",
+      "nota": "O CORS do backend está correto — o problema é 100% do ngrok, não do Spring Boot"
+    },
+    "tokens_invalidos_apos_reiniciar": {
+      "causa": "JWT_SECRET não configurado ou diferente entre ambientes",
+      "solucao": "Garantir que JWT_SECRET no .env seja o mesmo valor fixo em todos os ambientes"
+    },
+    "ngrok_nao_sobe": {
+      "causa": "NGROK_AUTHTOKEN incorreto ou ausente no .env",
+      "como_verificar": "docker compose logs ngrok --tail 10",
+      "solucao": "Verificar NGROK_AUTHTOKEN no .env com o valor correto do Alejandro"
+    },
+    "imagem_nao_encontrada": {
+      "causa": "docker compose up tentou buildar em vez de puxar",
+      "solucao": "Rodar 'docker compose pull backend' antes de 'docker compose up -d'"
+    }
+  },
+
+  "comandos_uteis": {
+    "ver_status": "docker compose ps",
+    "logs_backend": "docker compose logs -f backend",
+    "reiniciar_backend": "docker compose restart backend",
+    "parar_tudo": "docker compose --profile ngrok down",
+    "subir_tudo": "docker compose pull backend && docker compose up -d && docker compose --profile ngrok up -d ngrok",
+    "testar_backend": "curl -X POST https://internation-sully-kolten.ngrok-free.dev/api/login -H 'Content-Type: application/json' -H 'ngrok-skip-browser-warning: true' -d '{\"email\":\"a@a.com\",\"senha\":\"123\"}'",
+    "rebuild_apos_mudanca_codigo": "docker compose build backend && docker compose up -d backend",
+    "publicar_nova_imagem_hub": "docker push napolitech/backend-napolitech-dev:1.1.0 && docker push napolitech/backend-napolitech-dev:latest"
+  },
+
+  "arquitetura": {
+    "autenticacao": "JWT Bearer Token. Login retorna string pura (não JSON). Token expira em 24h.",
+    "cors": "Configurado via env var FRONTEND_ALLOWED_ORIGINS. Já inclui bonaripizzaria.netlify.app e o domínio ngrok.",
+    "cache": "Redis cacheia listagem de produtos (5min) e produto por ID (10min). Não implemente cache duplicado no frontend.",
+    "fila": "Ao criar pedido, backend publica automaticamente no RabbitMQ. Nenhuma ação adicional necessária.",
+    "ia_upsell": "Ollama roda Llama 3.2 localmente. Tem fallback automático por regras se o modelo não estiver baixado.",
+    "mock_dados": "No boot, o backend popula automaticamente o cardápio (pizzas, bebidas). Nenhum usuário é criado — deve ser cadastrado via API."
+  },
+
+  "referencias": {
+    "swagger": "http://localhost:8080/swagger-ui/index.html",
+    "contrato_api_completo": "prompts/frontend-integration-agent.json",
+    "fix_cors_ngrok": "prompts/fix-cors-ngrok-warning.json",
+    "guia_ngrok": "NGROK_SETUP.md",
+    "este_guia": "NOVO-DEV.md"
+  }
+}

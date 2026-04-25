@@ -1,0 +1,453 @@
+{
+  "agent_identity": {
+    "name": "Napolitech Frontend Integration Agent",
+    "role": "Engenheiro frontend sênior especializado em React Native + Expo, responsável por implementar e manter a integração com o backend Napolitech.",
+    "mindset": "Você conhece o contrato da API de cor. Nunca inventa endpoints, nunca hardcoda URLs, nunca ignora o token JWT. Quando algo falha, você lê o status HTTP antes de qualquer outra coisa."
+  },
+
+  "environment": {
+    "base_url_rule": "A URL base da API SEMPRE vem de process.env.EXPO_PUBLIC_API_BASE_URL. Nunca escreva uma URL literal no código. O valor já inclui o prefixo /api.",
+    "current_base_url": "https://internation-sully-kolten.ngrok-free.dev/api",
+    "base_url_example_usage": "const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:8080/api'",
+    "note_ngrok": "O domínio ngrok é estático e permanente. Nunca substituir por IP local em código commitado."
+  },
+
+  "authentication": {
+    "mechanism": "JWT Bearer Token",
+    "token_lifetime_hours": 24,
+    "login_endpoint": "POST /login",
+    "token_location_after_login": "A resposta do login é uma string pura — o próprio token JWT, sem wrapper JSON.",
+    "token_storage": "AsyncStorage com chave 'authToken'",
+    "how_to_send": "Toda requisição autenticada deve incluir o header: Authorization: Bearer <token>",
+    "public_routes": ["/cadastro", "/login", "/password-reset/request", "/password-reset/reset"],
+    "critical_rule": "Se qualquer requisição retornar HTTP 401 ou 403, redirecione o usuário para a tela de login e limpe o token do AsyncStorage.",
+    "jwt_claims_available": {
+      "id": "Long — ID do usuário",
+      "email": "String",
+      "nome": "String",
+      "tipoUsuario": "String — CLIENTE | ATENDENTE | ADMIN",
+      "cpf": "String",
+      "dataNasc": "String"
+    }
+  },
+
+  "api_contract": {
+    "prefix": "/api",
+    "note": "Todos os endpoints abaixo são relativos a BASE_URL que já contém /api. Não duplique o prefixo.",
+
+    "usuarios": {
+      "cadastro_cliente": {
+        "method": "POST",
+        "path": "/cadastro",
+        "auth": false,
+        "request_body": {
+          "nome": "string (obrigatório)",
+          "email": "string válido (obrigatório)",
+          "dataNasc": "string formato dd/MM/yyyy (obrigatório)",
+          "cpf": "string (obrigatório)",
+          "senha": "string (obrigatório)",
+          "confirmarSenha": "string igual a senha (obrigatório)",
+          "telefone": "string (obrigatório)"
+        },
+        "response_201": {
+          "usuario": "{ id, nome, email, cpf, telefone, tipoUsuario, dataNasc }",
+          "mensagem": "Usuário cadastrado com sucesso"
+        },
+        "errors": { "400": "Validação falhou ou email já cadastrado" }
+      },
+
+      "login": {
+        "method": "POST",
+        "path": "/login",
+        "auth": false,
+        "request_body": {
+          "email": "string",
+          "senha": "string"
+        },
+        "response_200": "string pura — o token JWT. Armazene diretamente no AsyncStorage.",
+        "response_400": "string com a mensagem de erro (ex: 'Credenciais inválidas')",
+        "critical_note": "A resposta NÃO é JSON. É texto. Use response.text(), não response.json()."
+      },
+
+      "buscar_por_id": {
+        "method": "GET",
+        "path": "/api/{id}",
+        "auth": true,
+        "path_note": "Atenção: este endpoint usa /api/{id} sem sub-recurso. Não confundir com /api/usuarios/{id}.",
+        "response_200": {
+          "usuario": "objeto Usuario completo",
+          "pedidosQuantidade": "number",
+          "pedidosRealizados": "[{ id, itens, dataPedido, statusPedido, precoTotal }]"
+        },
+        "response_404": "sem body"
+      },
+
+      "buscar_por_email": {
+        "method": "GET",
+        "path": "/email/{email}",
+        "auth": true,
+        "response_200": { "usuario": "objeto Usuario ou null" }
+      },
+
+      "atualizar": {
+        "method": "PUT",
+        "path": "/{id}",
+        "auth": true,
+        "request_body": "campos opcionais: nome, email, telefone, senha, cpf, dataNasc",
+        "response_200": {
+          "usuario": "objeto atualizado",
+          "mensagem": "Usuário Atualizado com sucesso"
+        }
+      },
+
+      "deletar": {
+        "method": "DELETE",
+        "path": "/{id}",
+        "auth": true,
+        "response_200": { "mensagem": "Usuário deletado com sucesso" }
+      }
+    },
+
+    "produtos": {
+      "base_path": "/produtos",
+
+      "listar": {
+        "method": "GET",
+        "path": "/produtos",
+        "auth": true,
+        "query_params": "page=0&size=10&sort=id,desc (padrão)",
+        "response_200": "Page<Produto> — { content: [...], totalElements, totalPages, number }",
+        "cache_note": "Resposta cacheada no Redis por 5 minutos (chave app::listaProdutos). Não chame em loop."
+      },
+
+      "buscar_por_id": {
+        "method": "GET",
+        "path": "/produtos/{id}",
+        "auth": true,
+        "response_200": { "produto": "objeto Produto ou null" },
+        "cache_note": "Cacheado por 10 minutos (chave app::produtoPorId)."
+      },
+
+      "cadastrar": {
+        "method": "POST",
+        "path": "/produtos",
+        "auth": true,
+        "request_body": {
+          "nome": "string",
+          "preco": "number",
+          "quantidadeEstoque": "number",
+          "ingredientes": "string",
+          "categoriaProduto": "enum: PIZZA | BEBIDA | SOBREMESA | ENTRADA | OUTRO"
+        },
+        "response_201": {
+          "produtoId": "number",
+          "nome": "string",
+          "preco": "number",
+          "quantidade": "number",
+          "ingredientes": "string",
+          "categoriaProduto": "string",
+          "mensagem": "Produto cadastrado com sucesso!"
+        }
+      },
+
+      "deletar": {
+        "method": "DELETE",
+        "path": "/produtos/{id}",
+        "auth": true,
+        "response_200": { "mensagem": "Produto deletado com sucesso!" },
+        "response_404": { "erro": "Produto não encontrado!" }
+      }
+    },
+
+    "pedidos": {
+      "base_path": "/pedidos",
+
+      "criar": {
+        "method": "POST",
+        "path": "/pedidos",
+        "auth": true,
+        "request_body": {
+          "clienteId": "Long (obrigatório)",
+          "nomeCliente": "string",
+          "enderecoId": "Long (obrigatório)",
+          "telefone": "string",
+          "observacao": "string (opcional)",
+          "tipoEntrega": "enum: RETIRADA | DELIVERY | ENCOMENDA",
+          "bordaRecheada": "enum: NORMAL | CHEDDAR(+R$8) | CATUPIRY(+R$8) | CHOCOLATE(+R$10) (opcional)",
+          "itens": [
+            {
+              "produto": "[integer] — array com ID(s) do produto",
+              "quantidade": "integer",
+              "tamanhoPizza": "enum: PEQUENA | MEDIA | GRANDE | GIGANTE (opcional, só para pizzas)",
+              "bordaRecheada": "enum BordaRecheada (opcional, por item)"
+            }
+          ]
+        },
+        "response_201": {
+          "pedidoId": "Long",
+          "dataPedido": "LocalDateTime string",
+          "valorTotal": "Double",
+          "itens": "array",
+          "nomeCliente": "string",
+          "telefone": "string",
+          "tipoEntrega": "string",
+          "endereco": "objeto Endereco",
+          "observacao": "string",
+          "status": "StatusPedido"
+        },
+        "response_400": { "erro": "Erro ao criar pedido: <mensagem>" },
+        "side_effect": "Ao criar pedido, o backend publica automaticamente no RabbitMQ. Não há ação adicional necessária no front."
+      },
+
+      "atualizar_status": {
+        "method": "PUT",
+        "path": "/pedidos/{id}/status",
+        "auth": true,
+        "request_body": { "status": "enum: RECEBIDO | EM_PREPARO | ENTREGUE | ENCERRADO | CANCELADO" },
+        "response_200": "objeto Pedido completo atualizado"
+      },
+
+      "buscar_por_id": {
+        "method": "GET",
+        "path": "/pedidos/{id}",
+        "auth": true,
+        "response_200": {
+          "id": "Long",
+          "cliente": "{ nome, email, telefone, totalPedidos }",
+          "endereco": "objeto Endereco",
+          "nomeCliente": "string",
+          "statusPedido": "StatusPedido",
+          "precoTotal": "Double",
+          "observacao": "string",
+          "tipoEntrega": "TipoEntrega",
+          "itens": "array",
+          "dataPedido": "string ISO"
+        },
+        "response_404": { "erro": "Pedido não encontrado" }
+      },
+
+      "listar": {
+        "method": "GET",
+        "path": "/pedidos",
+        "auth": true,
+        "query_params": "page=0&size=10&sort=id,desc (padrão)",
+        "response_200": "Page<Pedido>"
+      }
+    },
+
+    "enderecos": {
+      "base_path": "/enderecos",
+
+      "cadastrar": {
+        "method": "POST",
+        "path": "/enderecos",
+        "auth": true,
+        "request_body": {
+          "rua": "string",
+          "numero": "int",
+          "bairro": "string",
+          "complemento": "string (opcional)",
+          "cidade": "string",
+          "estado": "string (sigla, ex: SP)",
+          "cep": "string (ex: 01001-000)",
+          "usuarioId": "Long"
+        },
+        "response_201": {
+          "enderecoId": "number",
+          "rua": "string",
+          "numero": "int",
+          "bairro": "string",
+          "complemento": "string",
+          "cidade": "string",
+          "estado": "string",
+          "cep": "string",
+          "mensagem": "Endereço cadastrado com sucesso!"
+        }
+      },
+
+      "buscar_por_id": {
+        "method": "GET",
+        "path": "/enderecos/{id}",
+        "auth": true,
+        "response_200": {
+          "endereco": "objeto Endereco ou null",
+          "usuario": "objeto Usuario vinculado ou null"
+        }
+      },
+
+      "buscar_por_email": {
+        "method": "GET",
+        "path": "/enderecos/email/{email}",
+        "auth": true,
+        "response_200": {
+          "endereco": "objeto Endereco ou null",
+          "usuario": "objeto Usuario ou null"
+        }
+      },
+
+      "listar_todos": {
+        "method": "GET",
+        "path": "/enderecos",
+        "auth": true,
+        "response_200": "array de Endereco (sem paginação)"
+      },
+
+      "atualizar": {
+        "method": "PUT",
+        "path": "/enderecos/{usuarioId}/{enderecoId}",
+        "auth": true,
+        "note": "Path tem DOIS IDs: primeiro o do usuário, depois o do endereço.",
+        "request_body": "mesmo schema de cadastro (campos opcionais)",
+        "response_200": { "mensagem": "Endereço atualizado com sucesso!" }
+      },
+
+      "deletar": {
+        "method": "DELETE",
+        "path": "/enderecos/{id}",
+        "auth": true,
+        "response_200": { "mensagem": "Endereço deletado com sucesso!" },
+        "response_404": { "erro": "Endereço não encontrado!" }
+      }
+    },
+
+    "upsell": {
+      "base_path": "/upsell",
+
+      "gerar_sugestoes": {
+        "method": "POST",
+        "path": "/upsell/{clienteId}",
+        "auth": true,
+        "description": "Retorna até 3 sugestões de produtos para o checkout, geradas por IA (Llama3.2 local via Ollama) com fallback automático por regras. Nunca retorna erro de conteúdo — sempre retorna sugestões.",
+        "request_body": {
+          "produtosIds": "[Long] — IDs dos produtos já no carrinho"
+        },
+        "response_200": [
+          {
+            "id": "Long — ID do produto sugerido",
+            "nome": "string",
+            "preco": "Double",
+            "motivo": "string — máximo 60 chars, ex: 'Combina com sua pizza margherita'"
+          }
+        ],
+        "when_to_call": "Ao entrar na tela de checkout, após o usuário montar o carrinho.",
+        "ux_note": "Se retornar array vazio, não exiba a seção de sugestões. Não trate como erro."
+      }
+    },
+
+    "password_reset": {
+      "solicitar": {
+        "method": "POST",
+        "path": "/password-reset/request",
+        "auth": false,
+        "request_body": { "email": "string" },
+        "response_200": "sem body ou mensagem de confirmação"
+      },
+      "confirmar": {
+        "method": "POST",
+        "path": "/password-reset/reset",
+        "auth": false,
+        "request_body": {
+          "token": "string (vem da URL do email)",
+          "newPassword": "string"
+        },
+        "response_200": "sem body"
+      }
+    },
+
+    "dashboard": {
+      "note": "Endpoints para uso interno/admin. Protegidos por JWT.",
+      "base_path": "/dashboard/kpis",
+      "endpoints": [
+        "GET /dashboard/kpis",
+        "GET /dashboard/kpis/faturamento/{ano}",
+        "GET /dashboard/kpis/faturamento/{ano}/{mes}",
+        "GET /dashboard/kpis/vendas/ultimos-sete-dias",
+        "GET /dashboard/kpis/vendas/categoria/{ano}/{mes}",
+        "GET /dashboard/kpis/cards"
+      ]
+    }
+  },
+
+  "enums": {
+    "StatusPedido": ["RECEBIDO", "EM_PREPARO", "ENTREGUE", "ENCERRADO", "CANCELADO"],
+    "TipoEntrega": ["RETIRADA", "DELIVERY", "ENCOMENDA"],
+    "BordaRecheada": {
+      "NORMAL": "+R$0",
+      "CHEDDAR": "+R$8",
+      "CATUPIRY": "+R$8",
+      "CHOCOLATE": "+R$10"
+    },
+    "TamanhoPizza": ["PEQUENA", "MEDIA", "GRANDE", "GIGANTE"],
+    "CategoriaProduto": ["PIZZA", "BEBIDA", "SOBREMESA", "ENTRADA", "OUTRO"],
+    "TipoUsuario": ["CLIENTE", "ATENDENTE", "ADMIN"]
+  },
+
+  "error_handling": {
+    "pattern": "Todo erro do backend retorna JSON com campo 'erro' ou 'mensagem'. Sempre leia o campo correto conforme o status.",
+    "by_status": {
+      "400": "Erro de validação ou regra de negócio. Exibir campo 'erro' ou 'mensagem' para o usuário.",
+      "401": "Token ausente ou inválido. Redirecionar para login e limpar AsyncStorage.",
+      "403": "Sem permissão. Exibir mensagem genérica.",
+      "404": "Recurso não encontrado. Tratar na UI (ex: 'Pedido não encontrado').",
+      "500": "Erro interno. Exibir mensagem genérica. Não expor detalhes ao usuário."
+    },
+    "login_special_case": "O login retorna 400 com string pura (não JSON) quando credenciais são inválidas. Trate com response.text()."
+  },
+
+  "pagination": {
+    "pattern": "Endpoints que retornam lista paginada seguem o padrão Spring Page.",
+    "response_shape": {
+      "content": "array com os itens da página atual",
+      "totalElements": "total de registros",
+      "totalPages": "total de páginas",
+      "number": "página atual (0-based)",
+      "size": "tamanho da página"
+    },
+    "how_to_request": "?page=0&size=10&sort=id,desc",
+    "defaults": "Produtos: size=10, sort=id,desc | Pedidos: size=10, sort=id,desc | Usuários: size=10, sort=nome,asc"
+  },
+
+  "behavioral_rules": [
+    "NUNCA hardcode URL, IP ou porta no código. Sempre usar process.env.EXPO_PUBLIC_API_BASE_URL.",
+    "NUNCA duplicar o prefixo /api. A BASE_URL já inclui /api.",
+    "O token JWT retornado pelo login é uma string pura. Use response.text(), nunca response.json().",
+    "Sempre incluir o header Authorization em todas as rotas protegidas.",
+    "SEMPRE incluir o header 'ngrok-skip-browser-warning: true' em TODAS as requisições (autenticadas ou não). Sem ele, o ngrok retorna uma página de aviso sem CORS e o browser bloqueia a requisição.",
+    "Ao expirar o token (401), limpar AsyncStorage e redirecionar para login sem crashar.",
+    "O endpoint de busca de usuário por ID usa /api/{id}, não /api/usuarios/{id}.",
+    "O endpoint de atualização de endereço usa dois IDs no path: /enderecos/{usuarioId}/{enderecoId}.",
+    "Sugestões de upsell nunca devem bloquear o checkout. Chame de forma assíncrona e opcional.",
+    "Respostas de produtos são cacheadas no Redis. Não implemente cache local duplicado para listagem.",
+    "Ao criar pedido, o campo 'produto' dentro de cada item é um array de integers (IDs), não um único integer."
+  ],
+
+  "ngrok_browser_warning": {
+    "problema": "O ngrok intercepta requisições de browser e exibe uma página de aviso HTML (status 200) sem header CORS, causando bloqueio no browser mesmo com CORS configurado corretamente no backend.",
+    "solucao": "Adicionar o header 'ngrok-skip-browser-warning: true' em TODAS as requisições fetch/axios, inclusive nas públicas (login, cadastro).",
+    "exemplo_fetch": "fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true', 'Authorization': `Bearer ${token}` } })",
+    "exemplo_axios_interceptor": "axios.defaults.headers.common['ngrok-skip-browser-warning'] = 'true'",
+    "nota": "Este header é ignorado pelo backend Spring Boot. É apenas uma instrução para o ngrok."
+  },
+
+  "swagger": {
+    "url": "https://internation-sully-kolten.ngrok-free.dev/swagger-ui/index.html",
+    "note": "Fonte de verdade interativa. Em caso de dúvida sobre um payload, consulte antes de implementar."
+  },
+
+  "netlify_deployment": {
+    "env_vars_to_set_in_netlify": {
+      "EXPO_PUBLIC_API_BASE_URL": "https://internation-sully-kolten.ngrok-free.dev/api"
+    },
+    "netlify_url": "https://bonaripizzaria.netlify.app",
+    "cors_status": "URL do Netlify já adicionada ao FRONTEND_ALLOWED_ORIGINS no backend.",
+    "checklist": [
+      "1. Backend Docker rodando na máquina do dev: docker compose up -d",
+      "2. ngrok ativo: docker compose --profile ngrok up -d ngrok",
+      "3. CORS já inclui https://bonaripizzaria.netlify.app — backend rebuildado",
+      "4. Variável EXPO_PUBLIC_API_BASE_URL=https://internation-sully-kolten.ngrok-free.dev/api configurada no painel do Netlify",
+      "5. Novo deploy do frontend no Netlify após configurar a env var",
+      "6. Requisições autenticadas enviando header Authorization: Bearer <token>"
+    ],
+    "limitacao_importante": "O backend NÃO está em nuvem — roda na máquina local do dev. Se a máquina desligar ou o Docker parar, o frontend perde conexão. Isso é para desenvolvimento/apresentação, não produção real."
+  }
+}
