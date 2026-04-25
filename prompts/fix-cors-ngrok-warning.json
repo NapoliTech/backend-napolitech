@@ -1,0 +1,34 @@
+{
+  "titulo": "Fix: CORS bloqueado pelo ngrok browser warning",
+
+  "problema": {
+    "erro_no_console": "Access to fetch at 'https://internation-sully-kolten.ngrok-free.dev/api/...' from origin 'https://bonaripizzaria.netlify.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.",
+    "causa_raiz": "O ngrok intercepta requisições vindas de browsers e exibe uma página HTML de aviso (status 200) antes de encaminhar ao backend. Essa página não contém o header 'Access-Control-Allow-Origin', então o browser bloqueia a resposta por CORS.",
+    "importante": "O CORS do backend está CORRETO e já libera https://bonaripizzaria.netlify.app. O problema é 100% no ngrok, não no backend."
+  },
+
+  "solucao": {
+    "descricao": "Adicionar o header 'ngrok-skip-browser-warning: true' em TODAS as requisições HTTP do projeto. Esse header instrui o ngrok a pular a página de aviso e encaminhar direto ao backend.",
+    "nota": "O backend Spring Boot ignora esse header completamente. É seguro incluir sempre."
+  },
+
+  "implementacao": {
+    "se_usar_axios": {
+      "onde": "No arquivo onde o axios é instanciado/configurado (ex: api.js, axios.js, httpClient.js)",
+      "codigo": "axios.defaults.headers.common['ngrok-skip-browser-warning'] = 'true';"
+    },
+    "se_usar_axios_instance": {
+      "onde": "Na criação da instância do axios",
+      "codigo": "const api = axios.create({ baseURL: process.env.EXPO_PUBLIC_API_BASE_URL, headers: { 'ngrok-skip-browser-warning': 'true' } });"
+    },
+    "se_usar_fetch_nativo": {
+      "onde": "Em todo lugar que faz fetch — ou criar um wrapper global",
+      "codigo": "fetch(url, { ...options, headers: { 'ngrok-skip-browser-warning': 'true', ...options?.headers } })"
+    }
+  },
+
+  "validacao": {
+    "como_testar": "Após aplicar, abrir o console do browser em https://bonaripizzaria.netlify.app e tentar fazer login. O erro de CORS deve sumir.",
+    "se_ainda_der_erro": "Verificar se o header está sendo enviado abrindo a aba Network do DevTools, clicando na requisição bloqueada e conferindo se 'ngrok-skip-browser-warning: true' aparece nos Request Headers."
+  }
+}

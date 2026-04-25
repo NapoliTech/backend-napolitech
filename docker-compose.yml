@@ -21,6 +21,7 @@ services:
       DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
 
       SERVER_PORT: 8080
+      SERVER_ADDRESS: 0.0.0.0
 
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
@@ -39,6 +40,17 @@ services:
       REDIS_HOST: redis
 
       OLLAMA_BASE_URL: http://ollama:11434
+
+      # CORS: adicione a URL do ngrok aqui sem /api (ex: https://abc123.ngrok-free.app)
+      # Suporta wildcards: https://*.ngrok-free.app
+      FRONTEND_ALLOWED_ORIGINS: ${FRONTEND_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8081,http://localhost:19000,http://localhost:19006,http://10.0.2.2:8081}
+
+      # JWT: mínimo 32 caracteres. Fixo em produção para não invalidar tokens ao reiniciar.
+      JWT_SECRET: ${JWT_SECRET:-}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+
+      # URL base do frontend para links de reset de senha
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:5173}
 
     depends_on:
       db:
@@ -86,11 +98,11 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD-SHELL", "rabbitmqctl node_health_check"]
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
       interval: 10s
       timeout: 10s
       retries: 10
-      start_period: 20s
+      start_period: 60s
     networks:
       - network-napolitech
 
@@ -129,6 +141,28 @@ services:
       - redis-net
     volumes:
       - redisinsight_data:/data
+
+  # -------------------------------------------------------
+  # ngrok — tunnel HTTPS para o backend (profile opcional)
+  # Uso: docker compose --profile ngrok up
+  # Requer: NGROK_AUTHTOKEN no ambiente (https://dashboard.ngrok.com/get-started/your-authtoken)
+  # Depois de subir, acesse http://localhost:4040 para ver a URL pública gerada.
+  # Copie a URL e atualize FRONTEND_ALLOWED_ORIGINS e EXPO_PUBLIC_API_BASE_URL.
+  # -------------------------------------------------------
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ngrok-napolitech
+    command: http backend:8080 --domain=internation-sully-kolten.ngrok-free.dev --log=stdout
+    ports:
+      - "4040:4040"
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    depends_on:
+      - backend
+    networks:
+      - network-napolitech
+    profiles:
+      - ngrok
 
   # IA - Ollama (modelos LLM local, upsell no checkout)
   # Apos subir os containers, baixe o modelo uma unica vez:

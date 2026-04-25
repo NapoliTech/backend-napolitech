@@ -7,6 +7,7 @@ import com.pizzaria.backendpizzaria.infra.exception.ValidationException;
 import com.pizzaria.backendpizzaria.repository.PasswordResetTokenRepository;
 import com.pizzaria.backendpizzaria.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,9 @@ public class PasswordResetService {
     private UsuarioRepository userRepository;
     @Autowired
     private EmailService emailService;
+
+    @Value("${app.frontend.base-url:http://localhost:5173}")
+    private String frontendBaseUrl;
 
     public void sendResetLink(String email) {
         Optional<Usuario> optionalUser = userRepository.findByEmail(email.trim());
@@ -45,7 +49,7 @@ public class PasswordResetService {
 
         tokenRepository.save(resetToken);
 
-        String resetUrl = "http://localhost:5173/reset-password?token=" + token;
+        String resetUrl = frontendBaseUrl + "/reset-password?token=" + token;
         String message = """
                             Olá, %s!
                     
