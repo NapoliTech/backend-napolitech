@@ -90,7 +90,7 @@ public class UpsellService {
                     .toList();
         }
 
-        // 6. Monta o prompt e chama o Claude
+        // 6. Monta o prompt e chama a IA via Ollama
         try {
             String prompt = buildPrompt(nomeCliente, historico, carrinhoIds, todosProdutos, produtosSugeriveis, combinacoesPopulares);
             String aiResponse = chatClient.prompt()
@@ -98,7 +98,7 @@ public class UpsellService {
                     .call()
                     .content();
 
-            List<UpsellSugestaoDTO> sugestoes = parseAiResponse(aiResponse, todosProdutos);
+            List<UpsellSugestaoDTO> sugestoes = parseAiResponse(aiResponse, produtosSugeriveis);
             if (!sugestoes.isEmpty()) {
                 return sugestoes;
             }
@@ -170,28 +170,33 @@ public class UpsellService {
                 """.formatted(nomeCliente, carrinhoDesc, historicoDesc, combinacoesDesc, disponiveisDesc);
     }
 
-    private List<UpsellSugestaoDTO> parseAiResponse(String aiResponse, List<Produto> todosProdutos) {
+    private List<UpsellSugestaoDTO> parseAiResponse(String aiResponse, List<Produto> produtosSugeriveis) {
         try {
             String json = extractJson(aiResponse);
             JsonNode nodes = objectMapper.readTree(json);
 
+            Map<Long, Produto> disponiveisPorId = produtosSugeriveis.stream()
+                    .collect(Collectors.toMap(Produto::getId, p -> p));
             List<UpsellSugestaoDTO> resultado = new ArrayList<>();
             for (JsonNode node : nodes) {
                 if (!node.has("id") || !node.has("motivo")) continue;
 
                 long id = node.get("id").asLong();
-                String motivo = node.get("motivo").asText();
+                String motivo = node.get("motivo").asText().trim();
+                if (motivo.length() > 60) {
+                    motivo = motivo.substring(0, 60);
+                }
 
-                todosProdutos.stream()
-                        .filter(p -> p.getId().equals(id))
-                        .findFirst()
-                        .ifPresent(produto -> resultado.add(new UpsellSugestaoDTO(
-                                produto.getId(),
-                                produto.getNome(),
-                                produto.getPreco(),
-                                produto.getCategoriaProduto(),
-                                motivo
-                        )));
+                Produto produto = disponiveisPorId.get(id);
+                if (produto != null) {
+                    resultado.add(new UpsellSugestaoDTO(
+                            produto.getId(),
+                            produto.getNome(),
+                            produto.getPreco(),
+                            produto.getCategoriaProduto(),
+                            motivo
+                    ));
+                }
             }
             return resultado;
         } catch (Exception e) {
