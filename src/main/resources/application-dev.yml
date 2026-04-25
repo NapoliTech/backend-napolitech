@@ -1,0 +1,4 @@
+app:
+  public-api-base-url: ${PUBLIC_API_BASE_URL:http://localhost:8080/api}
+  cors:
+    allowed-origins: ${FRONTEND_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8081,http://localhost:19000,http://localhost:19006,http://10.0.2.2:8081}

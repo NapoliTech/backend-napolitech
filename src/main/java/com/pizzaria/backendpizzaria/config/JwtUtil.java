@@ -1,25 +1,49 @@
 package com.pizzaria.backendpizzaria.config;
+
 import com.pizzaria.backendpizzaria.domain.Usuario;
 import com.pizzaria.backendpizzaria.repository.UsuarioRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
+import jakarta.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
+import javax.crypto.SecretKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 @Component
-public class
-JwtUtil {
+public class JwtUtil {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    @Value("${jwt.secret:}")
+    private String jwtSecret;
+
+    private SecretKey secretKey;
+
+    @PostConstruct
+    public void init() {
+        if (StringUtils.hasText(jwtSecret)) {
+            byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+            if (keyBytes.length < 32) {
+                throw new IllegalStateException("JWT_SECRET deve ter pelo menos 32 caracteres");
+            }
+            this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+        } else {
+            this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+            log.warn("JWT_SECRET não configurado; tokens serão invalidados ao reiniciar a aplicação.");
+        }
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);

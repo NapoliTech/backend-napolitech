@@ -1,0 +1,18 @@
+server:
+  address: ${SERVER_ADDRESS:0.0.0.0}
+  port: ${SERVER_PORT:8080}
+
+app:
+  public-api-base-url: ${PUBLIC_API_BASE_URL:}
+  cors:
+    allowed-origins: ${FRONTEND_ALLOWED_ORIGINS:}
+  llama:
+    api-url: ${LLAMA_API_URL:}
+    api-key: ${LLAMA_API_KEY:}
+
+jwt:
+  secret: ${JWT_SECRET:}
+
+spring:
+  redis:
+    url: ${REDIS_URL:}

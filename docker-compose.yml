@@ -20,6 +20,10 @@ services:
       DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
 
       SERVER_PORT: 8080
+      SERVER_ADDRESS: 0.0.0.0
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://localhost:8080/api}
+      FRONTEND_ALLOWED_ORIGINS: ${FRONTEND_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8081,http://localhost:19000,http://localhost:19006,http://10.0.2.2:8081}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32chars}
 
       MAIL_HOST: smtp.gmail.com
       MAIL_PORT: 587
@@ -30,12 +34,17 @@ services:
 
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-admin}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-napolitech}
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: napolitech
       BROKER_EXCHANGE_NAME: napolitech-exchange
       BROKER_QUEUE_NAME: pedidos-queue
       BROKER_ROUTING_KEY: pedidos-routing-key
       REDIS_HOST: redis
+      REDIS_URL: ${REDIS_URL:-}
+      LLAMA_API_URL: ${LLAMA_API_URL:-}
+      LLAMA_API_KEY: ${LLAMA_API_KEY:-}
 
     depends_on:
       db:

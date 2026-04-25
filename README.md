@@ -95,6 +95,10 @@ HIBERNATE_DIALECT=org.hibernate.dialect.MySQLDialect
 
 # Servidor
 SERVER_PORT=8080
+SERVER_ADDRESS=0.0.0.0
+PUBLIC_API_BASE_URL=http://localhost:8080/api
+FRONTEND_ALLOWED_ORIGINS=http://localhost:19006
+JWT_SECRET=defina-uma-chave-com-32-caracteres-ou-mais
 
 # Logging
 LOGGING_SQL=DEBUG
@@ -109,6 +113,57 @@ MAIL_USERNAME=
 MAIL_PASSWORD=
 MAIL_SMTP_AUTH=true
 MAIL_SMTP_STARTTLS=true
+
+# Redis
+REDIS_URL=
+
+# RabbitMQ
+RABBITMQ_HOST=
+RABBITMQ_PORT=
+RABBITMQ_USERNAME=
+RABBITMQ_PASSWORD=
+
+# Llama Agent
+LLAMA_API_URL=
+LLAMA_API_KEY=
 ```
 
 > 💡 Todos esses valores podem ser sobrescritos via variáveis de ambiente do sistema ou no `docker-compose.yml`.
+
+---
+
+### 🧠 Redis / Cache
+
+O Redis é utilizado apenas para cache de leitura em produtos:
+
+| Cache | Chave | TTL | Comportamento |
+|-------|-------|-----|---------------|
+| `produtoPorId` | `app::produtoPorId::{id}` | 10 min | Cache por ID de produto |
+| `listaProdutos` | `app::listaProdutos::{page}-{size}-{sort}` | 5 min | Cache de listagem paginada |
+
+TTL padrão: **5 minutos**. As entradas são invalidadas quando um produto é criado ou removido.
+
+---
+
+### 🐰 RabbitMQ
+
+Eventos de pedidos sao publicados de forma assíncrona para evitar bloqueio da API.
+
+| Recurso | Nome | Observação |
+|---------|------|-----------|
+| Exchange | `pedidos.exchange` | Exchange principal (direct) |
+| Queue | `pedidos.queue` | Recebe eventos de pedido criado |
+| Routing Key | `pedidos.v1.pedido-criado` | Chave de roteamento principal |
+| DLQ Exchange | `pedidos.exchange.dlq` | Dead-letter para falhas |
+| DLQ Queue | `pedidos.queue.dlq` | Mensagens que falham após retries |
+| DLQ Routing Key | `pedidos.v1.pedido-criado.dlq` | Chave do DLQ |
+
+O listener possui retry habilitado e, em caso de falha, a mensagem é direcionada ao DLQ para análise.
+
+---
+
+### 🤖 Agente Llama
+
+O backend expõe `POST /api/llama` como proxy para o agente configurado em `LLAMA_API_URL`.
+O payload enviado pelo cliente é repassado integralmente ao agente, com `Authorization: Bearer <LLAMA_API_KEY>` se a chave estiver definida.
+Se `LLAMA_API_URL` não estiver configurada, o endpoint responde `503` sem afetar o fluxo principal da API.
