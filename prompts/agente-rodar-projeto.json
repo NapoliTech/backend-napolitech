@@ -1,0 +1,201 @@
+{
+  "meta": {
+    "versao": "1.0",
+    "projeto": "Napolitech Backend",
+    "proposito": "Prompt para agente de IA executar o setup completo do projeto do zero, diagnosticar problemas e validar que tudo está funcionando.",
+    "modelo_recomendado": "Claude Sonnet ou superior",
+    "instrucao_ao_agente": "Você é um engenheiro de DevOps sênior responsável por colocar este backend no ar. Siga as fases em ordem. Em cada fase, execute o comando, leia o output e só avance para a próxima fase quando o critério de sucesso for atendido. Se algo falhar, consulte a seção de diagnóstico antes de tentar qualquer outra coisa. Nunca pule etapas."
+  },
+
+  "pre_flight": {
+    "descricao": "Verificações obrigatórias ANTES de qualquer comando. Se qualquer item falhar, resolva antes de continuar.",
+    "verificacoes": [
+      {
+        "id": "PF-1",
+        "check": "Docker Desktop está instalado e rodando",
+        "comando": "docker info",
+        "criterio_sucesso": "Retorna informações do daemon sem erro",
+        "se_falhar": "Abrir Docker Desktop e aguardar o ícone na bandeja do sistema ficar estável. Sem Docker, nada funciona."
+      },
+      {
+        "id": "PF-2",
+        "check": "Arquivo .env existe na raiz do projeto",
+        "comando": "ls .env",
+        "criterio_sucesso": "Arquivo existe",
+        "se_falhar": "Executar: cp .env.example .env — depois preencher JWT_SECRET e NGROK_AUTHTOKEN com os valores fornecidos pelo Alejandro"
+      },
+      {
+        "id": "PF-3",
+        "check": "JWT_SECRET está preenchido no .env",
+        "comando": "grep JWT_SECRET .env",
+        "criterio_sucesso": "Linha retornada tem valor com 32+ caracteres após o '='",
+        "se_falhar": "Preencher JWT_SECRET no .env com o valor: e7c96235d3f2fdf3dc5cbf3033e4dd2321a80eb16699101cafc39276d20e2f55"
+      },
+      {
+        "id": "PF-4",
+        "check": "NGROK_AUTHTOKEN está preenchido no .env",
+        "comando": "grep NGROK_AUTHTOKEN .env",
+        "criterio_sucesso": "Linha retornada tem valor após o '='",
+        "se_falhar": "Preencher NGROK_AUTHTOKEN no .env com o token fornecido pelo Alejandro"
+      }
+    ]
+  },
+
+  "fases": [
+    {
+      "fase": 1,
+      "nome": "Baixar imagem do Docker Hub",
+      "objetivo": "Garantir que a imagem do backend está disponível localmente sem precisar compilar o código.",
+      "comando": "docker compose pull backend",
+      "criterio_sucesso": "Output contém 'Pull complete' ou 'Image is up to date'",
+      "tempo_estimado": "1-3 minutos dependendo da internet",
+      "se_falhar": {
+        "erro_auth": "Se retornar 'unauthorized': fazer docker login e tentar novamente",
+        "erro_not_found": "Se retornar 'not found': imagem pode ter sido removida do Hub — executar 'docker compose build backend' para compilar localmente (demora ~5min)"
+      }
+    },
+
+    {
+      "fase": 2,
+      "nome": "Subir todos os serviços",
+      "objetivo": "Inicializar MySQL, Redis, RabbitMQ, Ollama, RedisInsight e o backend.",
+      "comando": "docker compose up -d",
+      "criterio_sucesso": "Todos os containers aparecem com status 'Started' ou 'Running' no output",
+      "tempo_estimado": "30-60 segundos",
+      "se_falhar": {
+        "porta_ocupada": "Se retornar 'port is already allocated': outro processo usa a porta. Identificar com 'netstat -ano | findstr :3306' (Windows) e encerrar o processo conflitante",
+        "volume_corrompido": "Se retornar erro de volume: executar 'docker compose down -v' e subir novamente — ATENÇÃO: apaga dados do banco"
+      }
+    },
+
+    {
+      "fase": 3,
+      "nome": "Aguardar backend inicializar",
+      "objetivo": "O backend aguarda MySQL e RabbitMQ ficarem saudáveis antes de subir. Isso leva ~30s.",
+      "comando": "docker compose logs -f backend",
+      "criterio_sucesso": "Log exibe a linha: 'Carga do cardápio mock concluída.'",
+      "tempo_estimado": "30-90 segundos",
+      "instrucao": "Aguardar a linha de sucesso aparecer. Pressionar Ctrl+C após confirmar. NÃO avançar antes disso.",
+      "se_falhar": {
+        "backend_reiniciando": "Se o container reiniciar em loop: executar 'docker compose logs backend --tail 50' e verificar a causa raiz",
+        "mysql_nao_pronto": "Se log mostrar erro de conexão com MySQL: aguardar mais 30s — MySQL pode estar ainda inicializando",
+        "rabbitmq_nao_pronto": "Se log mostrar erro de conexão com RabbitMQ: executar 'docker compose logs rabbitmq --tail 20' para verificar se está healthy"
+      }
+    },
+
+    {
+      "fase": 4,
+      "nome": "Validar backend respondendo",
+      "objetivo": "Confirmar que a API está acessível e respondendo corretamente.",
+      "comando": "curl -s -o /dev/null -w \"%{http_code}\" -X POST http://localhost:8080/api/login -H \"Content-Type: application/json\" -d \"{\\\"email\\\":\\\"x@x.com\\\",\\\"senha\\\":\\\"x\\\"}\"",
+      "criterio_sucesso": "Retorna código HTTP 400 — significa que chegou no backend (credenciais inválidas é esperado)",
+      "se_falhar": {
+        "retorna_000_ou_502": "Backend ainda não está pronto — aguardar 15s e repetir",
+        "retorna_404": "Problema na rota — verificar se o perfil Spring está como 'prod'"
+      }
+    },
+
+    {
+      "fase": 5,
+      "nome": "Subir ngrok (túnel HTTPS público)",
+      "objetivo": "Expor o backend via domínio fixo HTTPS para o frontend no Netlify conseguir acessar.",
+      "comando": "docker compose --profile ngrok up -d ngrok",
+      "criterio_sucesso": "Container 'ngrok-napolitech' aparece com status 'Up' em 'docker ps'",
+      "tempo_estimado": "5-10 segundos",
+      "url_publica": "https://internation-sully-kolten.ngrok-free.dev",
+      "painel_local": "http://localhost:4040",
+      "se_falhar": {
+        "tunnel_session_failed": "NGROK_AUTHTOKEN incorreto ou conta sem sessão ativa — verificar valor no .env",
+        "dominio_ja_em_uso": "Outro processo já usa este domínio — verificar se outro ngrok está rodando e encerrar"
+      }
+    },
+
+    {
+      "fase": 6,
+      "nome": "Validar túnel ngrok funcionando",
+      "objetivo": "Confirmar que o frontend no Netlify consegue alcançar o backend.",
+      "comando": "curl -s -o /dev/null -w \"%{http_code}\" -X POST https://internation-sully-kolten.ngrok-free.dev/api/login -H \"Content-Type: application/json\" -H \"ngrok-skip-browser-warning: true\" -d \"{\\\"email\\\":\\\"x@x.com\\\",\\\"senha\\\":\\\"x\\\"}\"",
+      "criterio_sucesso": "Retorna código HTTP 400 — mesmo que local, mas agora via ngrok",
+      "se_falhar": {
+        "retorna_502": "Backend não está acessível via ngrok — verificar se fase 3 foi concluída com sucesso",
+        "retorna_000": "ngrok não está rodando — repetir fase 5"
+      }
+    },
+
+    {
+      "fase": 7,
+      "nome": "(Opcional) Baixar modelo de IA",
+      "objetivo": "Ativar o recurso de sugestões de upsell no checkout. Pode pular se não for usar IA.",
+      "comando": "docker exec ollama ollama pull llama3.2:1b",
+      "criterio_sucesso": "Output exibe 'success' ao final do download",
+      "tempo_estimado": "5-15 minutos (modelo ~1GB)",
+      "nota": "O backend funciona sem este passo. Se o modelo não estiver baixado, o endpoint /api/upsell retorna sugestões via fallback por regras."
+    }
+  ],
+
+  "validacao_final": {
+    "descricao": "Após todas as fases, executar este checklist completo.",
+    "checks": [
+      {
+        "id": "V-1",
+        "check": "Todos os containers rodando",
+        "comando": "docker compose ps",
+        "esperado": "backend-napolitech, mysql-napolitech, redis, rabbitmq-napolitech, ollama, redisinsight, ngrok-napolitech — todos 'Up'"
+      },
+      {
+        "id": "V-2",
+        "check": "MySQL e RabbitMQ saudáveis",
+        "comando": "docker compose ps",
+        "esperado": "mysql-napolitech e rabbitmq-napolitech com status '(healthy)'"
+      },
+      {
+        "id": "V-3",
+        "check": "API local respondendo",
+        "comando": "curl -s -X POST http://localhost:8080/api/login -H \"Content-Type: application/json\" -d \"{\\\"email\\\":\\\"x@x.com\\\",\\\"senha\\\":\\\"x\\\"}\"",
+        "esperado": "Qualquer resposta que não seja erro de conexão"
+      },
+      {
+        "id": "V-4",
+        "check": "API pública via ngrok respondendo",
+        "comando": "curl -s -H \"ngrok-skip-browser-warning: true\" https://internation-sully-kolten.ngrok-free.dev/api/produtos",
+        "esperado": "JSON com lista de produtos (cardápio populado pelo mock)"
+      },
+      {
+        "id": "V-5",
+        "check": "Swagger acessível",
+        "url": "http://localhost:8080/swagger-ui/index.html",
+        "esperado": "Interface do Swagger carrega no browser"
+      }
+    ]
+  },
+
+  "servicos_e_portas": {
+    "backend":      { "container": "backend-napolitech",   "porta": 8080,  "url": "http://localhost:8080" },
+    "mysql":        { "container": "mysql-napolitech",     "porta": 3306 },
+    "redis":        { "container": "redis",                "porta": 6379 },
+    "rabbitmq":     { "container": "rabbitmq-napolitech",  "portas": [5672, 15672], "dashboard": "http://localhost:15672 — admin/napolitech" },
+    "ollama":       { "container": "ollama",               "porta": 11434 },
+    "redisinsight": { "container": "redisinsight",         "porta": 5540,  "url": "http://localhost:5540" },
+    "ngrok":        { "container": "ngrok-napolitech",     "porta": 4040,  "painel": "http://localhost:4040", "url_publica": "https://internation-sully-kolten.ngrok-free.dev" }
+  },
+
+  "comandos_de_manutencao": {
+    "parar_tudo":           "docker compose --profile ngrok down",
+    "subir_tudo":           "docker compose pull backend && docker compose up -d && docker compose --profile ngrok up -d ngrok",
+    "reiniciar_backend":    "docker compose restart backend",
+    "ver_logs_backend":     "docker compose logs -f backend",
+    "ver_logs_todos":       "docker compose logs -f",
+    "status_containers":    "docker compose ps",
+    "rebuild_apos_codigo":  "docker compose build backend && docker compose up -d backend"
+  },
+
+  "regras_do_agente": [
+    "NUNCA avançar de fase sem atingir o critério de sucesso da fase atual",
+    "SEMPRE ler o output completo do comando antes de diagnosticar",
+    "Em caso de dúvida, rodar 'docker compose logs <servico> --tail 30' antes de qualquer outra ação",
+    "NUNCA rodar 'docker compose down -v' sem avisar explicitamente que isso apaga os dados do banco",
+    "O header 'ngrok-skip-browser-warning: true' é obrigatório em todos os curl via ngrok",
+    "Resposta HTTP 400 no /api/login é SUCESSO — significa que o backend respondeu (credencial inválida é esperada no teste)",
+    "Se um container não sobe, verificar logs ANTES de tentar recriar"
+  ]
+}
