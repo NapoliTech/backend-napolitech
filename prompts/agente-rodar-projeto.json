@@ -124,12 +124,20 @@
 
     {
       "fase": 7,
-      "nome": "(Opcional) Baixar modelo de IA",
-      "objetivo": "Ativar o recurso de sugestões de upsell no checkout. Pode pular se não for usar IA.",
+      "nome": "Baixar modelo de IA — OBRIGATÓRIO na primeira vez nesta máquina",
+      "objetivo": "Baixar o modelo Llama 3.2 para o container Ollama. O modelo fica salvo no volume Docker 'ollama_data' e persiste entre reinicializações. Só precisa rodar uma vez por máquina.",
       "comando": "docker exec ollama ollama pull llama3.2:1b",
       "criterio_sucesso": "Output exibe 'success' ao final do download",
-      "tempo_estimado": "5-15 minutos (modelo ~1GB)",
-      "nota": "O backend funciona sem este passo. Se o modelo não estiver baixado, o endpoint /api/upsell retorna sugestões via fallback por regras."
+      "tempo_estimado": "5-15 minutos dependendo da internet (modelo ~1GB)",
+      "verificar_se_ja_existe": "docker exec ollama ollama list",
+      "logica": "SE 'ollama list' retornar 'llama3.2:1b' na lista → modelo já baixado, PULAR esta fase. SE retornar lista vazia → executar o pull.",
+      "persistencia": {
+        "reiniciar_pc": "NÃO precisa baixar novamente — volume persiste",
+        "docker_compose_down": "NÃO precisa baixar novamente — volume persiste",
+        "docker_compose_down_v": "PRECISA baixar novamente — flag -v apaga volumes",
+        "pc_novo_ou_clone": "PRECISA baixar — primeira vez nesta máquina"
+      },
+      "nota": "O backend funciona sem este passo. Se o modelo não estiver baixado, o endpoint /api/upsell retorna sugestões via fallback por regras — sem erro."
     }
   ],
 
