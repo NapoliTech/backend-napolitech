@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose *)",
+      "Bash(xargs grep *)",
+      "Bash(curl -s -I -H \"Origin: https://bonaripizzaria.netlify.app\" \"https://internation-sully-kolten.ngrok-free.dev/api/email/test@gmail.com\")",
+      "Bash(docker info *)",
+      "Bash(docker push *)",
+      "Bash(docker tag *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ]
+  }
+}
